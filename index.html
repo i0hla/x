@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>X Media Download</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.263.1"
+        }
+    }
+    </script>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;700&display=swap');
+        body { background-color: #050505; color: #e5e7eb; font-family: 'IBM Plex Sans Arabic', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .media-pagination-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .media-pagination-btn.active {
+            background-color: white;
+            color: black;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Download, Plus, Copy, Trash2, X, User, Image as ImageIcon, 
+            ChevronLeft, ChevronRight, RefreshCw, Video, Maximize2, 
+            Clipboard, FileText, ExternalLink, Zap, Check, Globe
+        } from 'lucide-react';
+
+        const CORS_PROXIES = [
+            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+        ];
+
+        const fetchBlobWithProxy = async (url) => {
+            let lastError;
+            for (const proxyFunc of CORS_PROXIES) {
+                try {
+                    const proxyUrl = proxyFunc(url);
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error(`Proxy failed: ${response.status}`);
+                    return await response.blob();
+                } catch (e) {
+                    lastError = e;
+                }
+            }
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Direct fetch failed');
+                return await response.blob();
+            } catch (e) {
+                throw lastError || e;
+            }
+        };
+
+        const Lightbox = ({ media, onClose }) => {
+            if (!media) return null;
+            return (
+                <div className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-xl flex items-center justify-center p-4">
+                    <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all"><X size={32} /></button>
+                    <div className="w-full max-w-5xl h-full max-h-[90vh] flex items-center justify-center">
+                        {media.type === 'video' ? (
+                            <video src={media.url} controls autoPlay className="max-w-full max-h-full rounded-lg shadow-2xl border border-gray-800" />
+                        ) : (
+                            <img src={media.url} alt="Full view" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-gray-800" />
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const TweetCard = ({ tweet, onRemove, onOpenLightbox }) => {
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [isCopying, setIsCopying] = useState(false);
+            const [isDownloading, setIsDownloading] = useState(false);
+            
+            const currentMedia = tweet.media[currentIndex];
+
+            const downloadCurrent = async (e) => {
+                e.stopPropagation();
+                if (isDownloading) return;
+                setIsDownloading(true);
+
+                const item = currentMedia;
+                const downloadUrl = item.url;
+                const filename = `${tweet.handle}_${tweet.id}_${currentIndex}.${item.type === 'video' ? 'mp4' : 'jpg'}`;
+                
+                try {
+                    const blob = await fetchBlobWithProxy(downloadUrl);
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url; 
+                    link.download = filename;
+                    document.body.appendChild(link); 
+                    link.click();
+                    document.body.removeChild(link); 
+                    window.URL.revokeObjectURL(url);
+                } catch (e) { 
+                    window.open(downloadUrl, '_blank'); 
+                } finally {
+                    setIsDownloading(false);
+                }
+            };
+
+            const copyText = (textToCopy, type = 'link') => {
+                if (!textToCopy) return;
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+                document.body.appendChild(textArea); textArea.focus(); textArea.select();
+                document.execCommand('copy'); document.body.removeChild(textArea);
+                
+                if (type === 'link') {
+                    setIsCopying(true); setTimeout(() => setIsCopying(false), 1500);
+                } else {
+                    const btn = document.getElementById(`text-copy-${tweet.id}`);
+                    if(btn) { btn.style.color = '#4ade80'; setTimeout(() => btn.style.color = '', 500); }
+                }
+            };
+
+            return (
+                <div className="bg-[#111111] border border-[#222] rounded-3xl overflow-hidden shadow-2xl hover:border-gray-700 transition-all duration-300 group relative flex flex-col h-full">
+                    {/* Header */}
+                    <div className="p-4 flex items-center justify-between bg-[#161616] border-b border-[#222]">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full p-[1px] bg-gray-700 overflow-hidden">
+                                {tweet.avatar ? <img src={tweet.avatar} className="w-full h-full object-cover" /> : <User size={20} className="text-gray-400 m-auto" />}
+                            </div>
+                            <div className="flex flex-col text-right">
+                                <span className="font-bold text-sm text-gray-200 leading-tight">{tweet.author}</span>
+                                <span className="text-xs text-gray-500 font-mono">@{tweet.handle}</span>
+                            </div>
+                        </div>
+                        <button onClick={() => onRemove(tweet.id)} className="text-gray-600 hover:text-red-500 p-2 rounded-full hover:bg-red-500/10"><Trash2 size={18} /></button>
+                    </div>
+
+                    {/* Media Viewer */}
+                    <div className="relative aspect-[4/3] bg-black cursor-zoom-in overflow-hidden border-b border-[#222]" onClick={() => onOpenLightbox(currentMedia)}>
+                        <div className="w-full h-full flex items-center justify-center bg-black">
+                            {currentMedia.type === 'video' ? (
+                                <video 
+                                    key={currentMedia.url}
+                                    src={currentMedia.url} 
+                                    className="w-full h-full object-contain" 
+                                    poster={currentMedia.thumb} 
+                                    controls 
+                                    onClick={(e) => e.stopPropagation()} 
+                                    referrerPolicy="no-referrer"
+                                />
+                            ) : (
+                                <img src={currentMedia.url} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                            )}
+                        </div>
+
+                        {/* Pagination */}
+                        {tweet.media.length > 1 && (
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-wrap justify-center gap-2 z-10 px-4">
+                                {tweet.media.map((_, idx) => (
+                                    <button 
+                                        key={idx}
+                                        onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+                                        className={`media-pagination-btn w-7 h-7 rounded-lg text-[10px] font-bold border ${idx === currentIndex ? 'bg-white text-black border-white shadow-lg' : 'bg-black/40 text-white/70 border-white/10 backdrop-blur-md hover:bg-black/60'}`}
+                                    >
+                                        {idx + 1}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        
+                        <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 border border-white/10 text-gray-200">
+                            {currentMedia.type === 'video' ? <Video size={10} /> : <ImageIcon size={10} />} <span>{currentIndex + 1}/{tweet.media.length}</span>
+                        </div>
+                    </div>
+
+                    {/* Tweet Text */}
+                    {tweet.text && <div className="px-5 py-4 bg-[#111] text-right border-b border-[#222] flex-1"><p className="text-sm text-gray-300 leading-7 whitespace-pre-wrap" dir="auto">{tweet.text}</p></div>}
+
+                    {/* Action Footer */}
+                    <div className="p-3 bg-[#161616] mt-auto flex gap-2 items-center">
+                        <button onClick={downloadCurrent} disabled={isDownloading} className="flex-[2] bg-[#222] hover:bg-[#333] text-gray-200 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all border border-[#333]">
+                            {isDownloading ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />} 
+                            <span>{isDownloading ? 'جاري التحميل..' : 'تحميل'}</span>
+                        </button>
+
+                        <button onClick={() => copyText(currentMedia.url, 'link')} className={`${isCopying ? 'bg-green-900/20 text-green-400 border-green-900/50' : 'bg-[#222] text-gray-400 hover:bg-[#333] border-[#333]'} flex-1 border py-2.5 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 transition-all`}>
+                            {isCopying ? <Check size={14} /> : <Copy size={14} />} <span>{isCopying ? 'منسوخ' : 'رابط'}</span>
+                        </button>
+
+                        <button id={`text-copy-${tweet.id}`} onClick={() => copyText(tweet.text, 'text')} className="bg-[#222] text-gray-500 hover:text-white hover:bg-[#333] border border-[#333] w-10 h-10 rounded-xl flex items-center justify-center transition-all flex-shrink-0" title="نسخ النص">
+                            <FileText size={14} />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [input, setInput] = useState('');
+            const [tweets, setTweets] = useState([]);
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [lightboxMedia, setLightboxMedia] = useState(null);
+
+            useEffect(() => {
+                const saved = localStorage.getItem('x-media-deck-data');
+                if (saved) { try { setTweets(JSON.parse(saved)); } catch (e) {} }
+            }, []);
+
+            useEffect(() => { localStorage.setItem('x-media-deck-data', JSON.stringify(tweets)); }, [tweets]);
+
+            const extractTweetId = (urlInput) => {
+                try {
+                    let safeUrl = urlInput.trim();
+                    if (!safeUrl.startsWith('http')) safeUrl = `https://${safeUrl}`;
+                    const urlObj = new URL(safeUrl);
+                    if (urlObj.hostname.includes('twitter.com') || urlObj.hostname.includes('x.com')) {
+                        const pathSegments = urlObj.pathname.split('/');
+                        const statusIndex = pathSegments.indexOf('status');
+                        if (statusIndex !== -1 && pathSegments[statusIndex + 1]) return pathSegments[statusIndex + 1];
+                    }
+                    return null;
+                } catch (e) { return null; }
+            };
+
+            const fetchTweetData = async (id) => {
+                try {
+                    const response = await fetch(`https://api.fxtwitter.com/status/${id}`);
+                    if (!response.ok) throw new Error('Network error');
+                    const data = await response.json();
+                    const mediaList = [];
+                    
+                    if (data?.tweet?.media?.videos) {
+                        data.tweet.media.videos.forEach(v => {
+                            mediaList.push({ 
+                                type: 'video', 
+                                url: v.url, 
+                                thumb: v.thumbnail_url
+                            });
+                        });
+                    }
+                    
+                    if (data?.tweet?.media?.photos) {
+                        const hasVideo = mediaList.some(m => m.type === 'video');
+                        if (!hasVideo || mediaList.length === 0) {
+                            data.tweet.media.photos.forEach(p => mediaList.push({ type: 'image', url: p.url, thumb: p.url }));
+                        }
+                    }
+                    
+                    if (mediaList.length === 0) return null;
+                    return {
+                        id: id, text: data.tweet.text, author: data.tweet.author.name, handle: data.tweet.author.screen_name,
+                        avatar: data.tweet.author.avatar_url, media: mediaList, timestamp: Date.now()
+                    };
+                } catch (error) { return null; }
+            };
+
+            const handlePaste = async () => {
+                try { const text = await navigator.clipboard.readText(); setInput(text); } catch (err) { }
+            };
+
+            const handleAddLink = async () => {
+                setIsProcessing(true);
+                const regex = /((https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/[0-9]+)/g;
+                const rawMatches = input.match(regex) || [];
+                
+                if (rawMatches.length === 0) {
+                    alert("الرابط غير صحيح!");
+                    setIsProcessing(false);
+                    return;
+                }
+
+                const newTweets = [];
+                const uniqueUrls = [...new Set(rawMatches)];
+
+                for (const url of uniqueUrls) {
+                    const id = extractTweetId(url);
+                    if (id && !tweets.some(t => t.id === id)) {
+                        const tweetData = await fetchTweetData(id);
+                        if (tweetData) newTweets.push(tweetData);
+                    }
+                }
+
+                setTweets(prev => [...newTweets, ...prev]);
+                setInput('');
+                setIsProcessing(false);
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col items-center p-4 sm:p-8 overflow-x-hidden">
+                    {lightboxMedia && <Lightbox media={lightboxMedia} onClose={() => setLightboxMedia(null)} />}
+
+                    <header className="w-full max-w-5xl flex justify-between items-center mb-10 z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-[#111] border border-[#333] text-white p-3 rounded-2xl shadow-xl"><X size={24} strokeWidth={3} /></div>
+                            <div className="text-right">
+                                <h1 className="text-2xl font-bold text-white">تنزيل االوسائط من X</h1>
+                                <p className="text-xs text-gray-600 font-mono tracking-widest">X Media Downloader</p>
+                            </div>
+                        </div>
+                        {tweets.length > 0 && (
+                            <button onClick={() => setTweets([])} className="bg-[#111] border border-[#333] text-gray-400 hover:text-red-400 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
+                                <Trash2 size={14} /> تنظيف الكل
+                            </button>
+                        )}
+                    </header>
+
+                    <main className="w-full max-w-5xl space-y-8 z-10 flex-1">
+                        <div className="bg-[#111] border border-[#333] rounded-3xl p-2 pl-3 flex gap-2 shadow-lg">
+                            <button onClick={handlePaste} className="sm:hidden bg-[#222] text-gray-300 p-3 rounded-xl hover:bg-[#333]"><Clipboard size={20} /></button>
+                            <input 
+                                type="text" value={input} onChange={(e) => setInput(e.target.value)} 
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddLink()} 
+                                placeholder="أدخل رابط X أو Twitter..." 
+                                className="flex-1 bg-transparent border-none text-gray-200 px-3 py-3 focus:ring-0 placeholder-gray-700 text-sm font-medium text-right outline-none truncate" 
+                            />
+                            <button onClick={handleAddLink} disabled={isProcessing || !input.trim()} className={`px-6 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all ${isProcessing ? 'bg-[#222] text-gray-500' : 'bg-white text-black hover:bg-gray-200'}`}>
+                                {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <Plus size={20} />} <span>إضافة</span>
+                            </button>
+                        </div>
+
+                        {tweets.length > 0 && <div className="flex justify-between px-4 text-[10px] uppercase font-bold text-gray-600 tracking-widest"><span>CARDS: {tweets.length}</span><span className="flex gap-1 items-center"><Zap size={10} /> LIVE SYNC</span></div>}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
+                            {tweets.map((tweet) => <TweetCard key={tweet.id} tweet={tweet} onRemove={(id) => setTweets(t => t.filter(x => x.id !== id))} onOpenLightbox={setLightboxMedia} />)}
+                        </div>
+
+                        {tweets.length === 0 && !isProcessing && (
+                            <div className="text-center py-32 opacity-20 flex flex-col items-center">
+                                <Globe size={48} className="text-gray-500 mb-4" />
+                                <h3 className="text-xl font-bold text-gray-300 uppercase tracking-[0.2em]">Ready for input</h3>
+                            </div>
+                        )}
+                    </main>
+
+                    <footer className="w-full max-w-5xl border-t border-white/5 py-8 mt-12 flex flex-col items-center gap-2 opacity-50">
+                        <div className="flex items-center gap-2 text-xs font-mono text-gray-500 uppercase tracking-widest">
+                            <span>Developed By</span>
+                            <span className="bg-white text-black px-2 py-0.5 rounded font-bold">Dev By Instagram @eukc</span>
+                        </div>
+                        <p className="text-[10px] text-gray-700">© 2026 X MEDIA DECK. ALL RIGHTS RESERVED.</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
