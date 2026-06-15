@@ -1,61 +1,344 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    <title>X Media Download</title>
+    <title>Komorebi X - Minimalist Downloader & Analyzer</title>
     
+    <!-- ==========================================
+         1. CSS SECTION (Tailwind & custom styling)
+         ========================================== -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script type="importmap">
-    {
-        "imports": {
-            "react": "https://esm.sh/react@18.2.0",
-            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-            "lucide-react": "https://esm.sh/lucide-react@0.263.1"
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        japandi: {
+                            bg: '#FAF8F5',     /* Alabaster/bone background */
+                            dark: '#1C1917',   /* Warm Charcoal instead of stark black */
+                            clay: '#8C7A6B',   /* Soft Teak/Linen accent color */
+                            milk: '#F4EFE6',   /* Soft cream backdrop */
+                            bone: '#E7E2D8',   /* Ambient contrast border */
+                            stone: '#605C58',  /* Premium muted text tone */
+                            light: '#FFFDFB'   /* Crisp soft white */
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Georgia', 'serif'],
+                        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    }
+                }
+            }
         }
-    }
     </script>
-
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;700&display=swap');
-        body { background-color: #050505; color: #e5e7eb; font-family: 'IBM Plex Sans Arabic', sans-serif; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        
-        .media-pagination-btn {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Smooth fade-in transitions for dynamic renders */
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .media-pagination-btn.active {
-            background-color: white;
-            color: black;
-            transform: scale(1.1);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen bg-japandi-bg text-japandi-dark font-sans antialiased selection:bg-japandi-bone">
 
-    <div id="root"></div>
+    <!-- Decorative Top Accent Bar -->
+    <div class="h-1.5 w-full bg-japandi-clay"></div>
 
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useRef } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { 
-            Download, Plus, Copy, Trash2, X, User, Image as ImageIcon, 
-            ChevronLeft, ChevronRight, RefreshCw, Video, Maximize2, 
-            Clipboard, FileText, ExternalLink, Zap, Check, Globe
-        } from 'lucide-react';
+    <!-- ==========================================
+         2. HTML LAYOUT SECTION
+         ========================================== -->
+    <div class="max-w-4xl mx-auto px-4 py-8 md:py-16">
+        
+        <!-- Header -->
+        <header class="text-center mb-10 md:mb-14">
+            <div class="inline-flex items-center justify-center space-x-2 bg-japandi-milk px-3.5 py-1.5 rounded-full border border-japandi-bone mb-4 text-japandi-clay text-xs font-semibold uppercase tracking-wider">
+                <span class="w-2 h-2 rounded-full bg-japandi-clay inline-block"></span>
+                <span>Minimalist X Engine</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-japandi-dark font-serif mb-3">
+                Komorebi <span class="text-japandi-clay font-light">X</span>
+            </h1>
+            <p class="text-japandi-stone max-w-lg mx-auto text-sm md:text-base leading-relaxed">
+                A serene, raw-crafted tool to query X/Twitter profiles, analyze metadata, and download media seamlessly through smart fallbacks.
+            </p>
+        </header>
 
+        <!-- Main Content Area -->
+        <main class="space-y-8">
+            
+            <!-- Search & Control Panel -->
+            <section class="bg-white rounded-3xl p-6 md:p-8 border border-japandi-bone shadow-sm">
+                <div class="space-y-4">
+                    <label class="block text-xs font-bold uppercase tracking-widest text-japandi-stone">
+                        Search Query / Link Input
+                    </label>
+                    
+                    <div class="relative flex flex-col md:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-japandi-stone">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </span>
+                            <input
+                                id="search-input"
+                                type="text"
+                                placeholder="e.g. @naval, profile URL, or a tweet/status link"
+                                class="w-full bg-japandi-bg border border-japandi-bone text-japandi-dark rounded-2xl pl-12 pr-12 py-4 focus:ring-2 focus:ring-japandi-clay focus:border-japandi-clay outline-none transition-all placeholder:text-[#A8A29E] text-base"
+                            />
+                            <button 
+                                id="clear-input-btn"
+                                class="absolute inset-y-0 right-0 hidden items-center pr-4 text-[#A8A29E] hover:text-japandi-dark"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <button
+                            id="search-btn"
+                            class="bg-japandi-dark hover:bg-[#3F3A36] text-japandi-bg font-semibold px-8 py-4 rounded-2xl shadow-sm transition-all duration-200 flex items-center justify-center space-x-2"
+                        >
+                            <span id="btn-text">Inspect</span>
+                            <svg id="btn-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                            <!-- Spinner (hidden by default) -->
+                            <svg id="btn-spinner" class="animate-spin h-5 w-5 text-white hidden" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Instant Format Badges -->
+                    <div class="flex flex-wrap items-center gap-2 pt-2 text-xs text-japandi-stone">
+                        <span class="font-semibold text-stone-400">Supported Syntax:</span>
+                        <span class="bg-japandi-bg px-2.5 py-1 rounded-md border border-japandi-bone">@handle</span>
+                        <span class="bg-japandi-bg px-2.5 py-1 rounded-md border border-japandi-bone">x.com/user</span>
+                        <span class="bg-japandi-bg px-2.5 py-1 rounded-md border border-japandi-bone">x.com/user/status/id</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Skeleton Loader (hidden by default) -->
+            <div id="skeleton-loader" class="space-y-6 hidden">
+                <div class="bg-white rounded-3xl border border-japandi-bone p-8 animate-pulse space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-japandi-milk rounded-full"></div>
+                        <div class="space-y-2 flex-1">
+                            <div class="h-4 bg-japandi-milk rounded-md w-1/4"></div>
+                            <div class="h-3 bg-japandi-milk rounded-md w-1/6"></div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 pt-4">
+                        <div class="h-4 bg-japandi-milk rounded-md w-full"></div>
+                        <div class="h-4 bg-japandi-milk rounded-md w-5/6"></div>
+                    </div>
+                    <div class="h-48 bg-japandi-bg rounded-2xl w-full border border-japandi-bone/50"></div>
+                </div>
+            </div>
+
+            <!-- Error Box (hidden by default) -->
+            <div id="error-box" class="bg-japandi-light border border-red-200/60 rounded-2xl p-5 hidden items-start space-x-3.5 shadow-sm fade-in">
+                <div class="p-2 bg-red-50 rounded-lg text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-japandi-dark text-sm">Query Analysis Failed</h3>
+                    <p id="error-text" class="text-sm text-red-700/85 mt-1 leading-relaxed"></p>
+                    <div class="mt-3">
+                        <button id="error-dismiss-btn" class="text-xs font-medium text-japandi-stone hover:underline">Dismiss</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile View Mount -->
+            <div id="profile-container" class="fade-in"></div>
+
+            <!-- Post View Mount -->
+            <div id="post-container" class="fade-in"></div>
+
+            <!-- Search History Logs -->
+            <section id="history-container" class="bg-white rounded-3xl border border-japandi-bone p-6 shadow-sm hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-japandi-stone">
+                        Recent Activity Log
+                    </h3>
+                    <button id="clear-history-btn" class="text-xs font-semibold text-stone-400 hover:text-red-500 transition-colors">
+                        Clear History
+                    </button>
+                </div>
+                <div id="history-pills" class="flex flex-wrap gap-2"></div>
+            </section>
+
+            <!-- Guide and Philosophy Container -->
+            <section class="bg-gradient-to-br from-japandi-milk/40 to-japandi-bg border border-japandi-bone rounded-3xl p-6 md:p-8 space-y-4">
+                <h3 class="text-base font-serif font-bold text-japandi-dark">
+                    Japandi Minimalist Philosophy & Support Matrix
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6 text-xs text-japandi-stone leading-relaxed">
+                    <div class="space-y-2">
+                        <p class="font-bold text-japandi-clay">Account Profiles</p>
+                        <p>
+                            To look up general account stats and active meta descriptions, provide the account username directly (e.g. <code>@naval</code>). Ideal for exploring follower scales or profile images.
+                        </p>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="font-bold text-japandi-clay">Post Media Downloading</p>
+                        <p>
+                            Paste direct post status links. The application connects via <strong>FXTwitter APITweet protocols</strong> to instantly render and fetch original file links with multi-proxy fallback architecture.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center mt-12 md:mt-20 text-xs text-stone-400 space-y-2">
+            <p>© <span id="year"></span> Komorebi X. Crafted with peaceful, warm minimalist aesthetic guidelines.</p>
+            <p>Powered by FixTweet, AllOrigins, and CORS Proxy. No Twitter API key is required.</p>
+        </footer>
+
+    </div>
+
+    <!-- Lightbox Modal (hidden by default) -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-[#1C1917]/95 backdrop-blur-sm hidden items-center justify-center p-4 transition-all duration-300">
+        <div class="relative max-w-4xl w-full bg-japandi-bg rounded-3xl overflow-hidden border border-japandi-bone shadow-2xl flex flex-col md:flex-row">
+            <!-- Visual Display -->
+            <div class="flex-1 bg-stone-950 flex items-center justify-center p-4 min-h-[300px] md:min-h-[450px]">
+                <img id="lightbox-img" src="" alt="" class="max-w-full max-h-[70vh] object-contain rounded-lg" />
+            </div>
+            <!-- Metadata & Download Suite -->
+            <div class="w-full md:w-80 p-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-japandi-bone bg-japandi-bg">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] uppercase tracking-widest font-bold text-japandi-clay">Viewing Asset</span>
+                            <h4 id="lightbox-title" class="text-lg font-serif font-bold text-japandi-dark mt-1">Image Asset</h4>
+                        </div>
+                        <button id="close-lightbox" class="p-1 rounded-full text-stone-400 hover:text-japandi-dark hover:bg-stone-100 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-xs text-japandi-stone leading-relaxed">
+                        Inspecting the original high-resolution version of this profile resource. You can save it to your system below.
+                    </p>
+                </div>
+                <div class="space-y-2 mt-8 md:mt-0">
+                    <button id="lightbox-copy-btn" class="w-full py-3 px-4 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:bg-japandi-milk transition-all flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <span>Copy Image URL</span>
+                    </button>
+                    <button id="lightbox-download-btn" class="w-full py-3 px-4 bg-japandi-dark hover:bg-[#3F3A36] text-japandi-bg text-xs font-bold rounded-xl transition-all flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span id="lightbox-download-text">Download Image</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Toast Alerts -->
+    <div id="toast-notif" class="fixed bottom-6 right-6 z-50 bg-japandi-dark text-japandi-bg px-5 py-3 rounded-xl shadow-lg border border-japandi-clay/20 flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 ease-out pointer-events-none">
+        <svg class="w-5 h-5 text-[#C8B195]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span id="toast-text" class="text-sm font-medium tracking-wide">Success!</span>
+    </div>
+
+
+    <!-- ==========================================
+         3. JAVASCRIPT ENGINE SECTION
+         ========================================== -->
+    <script>
+        // Set dynamic footer year
+        document.getElementById('year').innerText = new Date().getFullYear();
+
+        // Proxies for CORS bypass & file downloads (corsproxy.io is primary for high-speed streaming)
         const CORS_PROXIES = [
             (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
             (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
         ];
 
+        // State Store
+        let state = {
+            searchHistory: [],
+            profileData: null,
+            postData: null,
+            dataType: null, // 'profile' | 'post'
+            downloadProgress: {} // tracks status of media urls
+        };
+
+        // DOM elements
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const clearInputBtn = document.getElementById('clear-input-btn');
+        const skeletonLoader = document.getElementById('skeleton-loader');
+        const errorBox = document.getElementById('error-box');
+        const errorText = document.getElementById('error-text');
+        const errorDismissBtn = document.getElementById('error-dismiss-btn');
+        const profileContainer = document.getElementById('profile-container');
+        const postContainer = document.getElementById('post-container');
+        const historyContainer = document.getElementById('history-container');
+        const historyPills = document.getElementById('history-pills');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        
+        // Lightbox Elements
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxTitle = document.getElementById('lightbox-title');
+        const closeLightboxBtn = document.getElementById('close-lightbox');
+        const lightboxCopyBtn = document.getElementById('lightbox-copy-btn');
+        const lightboxDownloadBtn = document.getElementById('lightbox-download-btn');
+        const lightboxDownloadText = document.getElementById('lightbox-download-text');
+
+        // Toast Helpers
+        function triggerToast(msg) {
+            const toast = document.getElementById('toast-notif');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3550);
+        }
+
+        // Clipboard Copy Utility
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            try {
+                document.execCommand('copy');
+                triggerToast("Copied to clipboard!");
+            } catch (err) {
+                triggerToast("Failed to copy link.");
+            }
+            document.body.removeChild(el);
+        }
+
+        // Fetch utilities
         const fetchBlobWithProxy = async (url) => {
             let lastError;
             for (const proxyFunc of CORS_PROXIES) {
@@ -64,310 +347,719 @@
                     const response = await fetch(proxyUrl);
                     if (!response.ok) throw new Error(`Proxy failed: ${response.status}`);
                     return await response.blob();
-                } catch (e) {
-                    lastError = e;
+                } catch (err) {
+                    lastError = err;
                 }
             }
+            throw lastError || new Error("Failed to fetch via all available proxies");
+        };
+
+        const fetchJsonWithProxy = async (url) => {
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Direct fetch failed');
-                return await response.blob();
+                const directResponse = await fetch(url);
+                if (directResponse.ok) {
+                    return await directResponse.json();
+                }
+            } catch (e) {}
+
+            let lastError;
+            for (const proxyFunc of CORS_PROXIES) {
+                try {
+                    const proxyUrl = proxyFunc(url);
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error(`Proxy failed with status ${response.status}`);
+                    return await response.json();
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+            throw lastError || new Error("Connection failed. Please check network or try again.");
+        };
+
+        // Input parser
+        const parseInput = (rawInput) => {
+            const trimmed = rawInput.trim();
+            if (!trimmed) return null;
+
+            const statusRegex = /(?:twitter|x)\.com\/[^/]+\/status\/(\d+)/i;
+            const statusMatch = trimmed.match(statusRegex);
+
+            if (statusMatch && statusMatch[1]) {
+                return { type: 'post', id: statusMatch[1], display: `Post #${statusMatch[1]}` };
+            }
+
+            if (/^\d{10,}$/.test(trimmed)) {
+                return { type: 'post', id: trimmed, display: `Post #${trimmed}` };
+            }
+
+            let username = trimmed;
+            if (trimmed.includes('twitter.com/') || trimmed.includes('x.com/')) {
+                const parts = trimmed.split('/');
+                username = parts[parts.length - 1].split('?')[0]; 
+            }
+            
+            username = username.replace(/^@/, '').trim();
+            
+            if (username.length > 0 && /^[a-zA-Z0-9_]{1,15}$/.test(username)) {
+                return { type: 'profile', username: username, display: `@${username}` };
+            }
+
+            return null;
+        };
+
+        // Loading toggler
+        function toggleLoading(isLoading) {
+            if (isLoading) {
+                skeletonLoader.classList.remove('hidden');
+                document.getElementById('btn-text').innerText = 'Analyzing...';
+                document.getElementById('btn-icon').classList.add('hidden');
+                document.getElementById('btn-spinner').classList.remove('hidden');
+                searchBtn.disabled = true;
+            } else {
+                skeletonLoader.classList.add('hidden');
+                document.getElementById('btn-text').innerText = 'Inspect';
+                document.getElementById('btn-icon').classList.remove('hidden');
+                document.getElementById('btn-spinner').classList.add('hidden');
+                searchBtn.disabled = false;
+            }
+        }
+
+        // LocalStorage History Sync
+        function initHistory() {
+            try {
+                const stored = localStorage.getItem('komorebi_x_history');
+                if (stored) {
+                    state.searchHistory = JSON.parse(stored);
+                }
+                renderHistory();
             } catch (e) {
-                throw lastError || e;
+                console.warn(e);
+            }
+        }
+
+        function saveToHistory(item) {
+            const filtered = state.searchHistory.filter(h => h.query.toLowerCase() !== item.query.toLowerCase());
+            state.searchHistory = [item, ...filtered].slice(0, 10);
+            try {
+                localStorage.setItem('komorebi_x_history', JSON.stringify(state.searchHistory));
+            } catch (e) {}
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (state.searchHistory.length === 0) {
+                historyContainer.classList.add('hidden');
+                return;
+            }
+            historyContainer.classList.remove('hidden');
+            historyPills.innerHTML = '';
+
+            state.searchHistory.forEach(item => {
+                const pill = document.createElement('button');
+                pill.className = "flex items-center space-x-2 bg-japandi-bg hover:bg-japandi-milk border border-japandi-bone rounded-xl px-3.5 py-2 text-xs text-japandi-dark font-semibold transition-all";
+                pill.innerHTML = `
+                    <span class="w-1.5 h-1.5 rounded-full bg-japandi-clay inline-block"></span>
+                    <span>${item.label}</span>
+                    <span class="text-[10px] text-stone-400 font-normal">(${item.type})</span>
+                `;
+                pill.addEventListener('click', () => {
+                    searchInput.value = item.query;
+                    handleSearch(item.query);
+                });
+                historyPills.appendChild(pill);
+            });
+        }
+
+        // Universal Download handler with ultra-reliable fallback channels
+        async function downloadMedia(mediaUrl, index, mediaType, btnElementId) {
+            const btn = document.getElementById(btnElementId);
+            if (!btn) return;
+
+            const origContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-pulse">Connecting...</span>`;
+
+            const extension = mediaType === 'video' ? 'mp4' : mediaType === 'gif' ? 'mp4' : 'jpg';
+            const filename = `komorebi-x-media-${index}-${Date.now()}.${extension}`;
+
+            try {
+                btn.innerHTML = `<span class="animate-pulse">Downloading...</span>`;
+                
+                let blob;
+                // specialized image optimization bypass
+                if (mediaType === 'photo') {
+                    try {
+                        const imageProxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(mediaUrl)}`;
+                        const response = await fetch(imageProxyUrl);
+                        if (!response.ok) throw new Error("Image proxy failed");
+                        blob = await response.blob();
+                    } catch (e) {
+                        console.warn("Specialized image proxy failed, falling back to general proxies", e);
+                        blob = await fetchBlobWithProxy(mediaUrl);
+                    }
+                } else {
+                    blob = await fetchBlobWithProxy(mediaUrl);
+                }
+                
+                const blobUrl = URL.createObjectURL(blob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = blobUrl;
+                downloadLink.download = filename;
+                
+                // No target="_blank" to ensure the browser does not open the link as a page stream, starting instant download
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                
+                document.body.removeChild(downloadLink);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+                btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-clay text-japandi-bg transition-all flex items-center space-x-2 min-w-[120px] justify-center";
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Done</span>
+                `;
+                triggerToast("Downloaded successfully!");
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center";
+                    btn.innerHTML = origContent;
+                }, 4000);
+
+            } catch (err) {
+                console.warn("Iframe or sandbox restricted direct blob fetch. Using instant proxy-tunnel trigger...", err);
+                
+                // Let the browser handle proxy-download tunnel without opening blank tabs
+                const proxyDownloadUrl = `https://corsproxy.io/?${encodeURIComponent(mediaUrl)}`;
+                const downloadLink = document.createElement('a');
+                downloadLink.href = proxyDownloadUrl;
+                downloadLink.download = filename;
+                
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-clay text-japandi-bg transition-all flex items-center space-x-2 min-w-[120px] justify-center";
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Started</span>
+                `;
+                triggerToast("Download initiated via proxy tunnel!");
+
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center";
+                    btn.innerHTML = origContent;
+                }, 4000);
+            }
+        }
+
+        // Lightbox state handlers
+        function openLightbox(url, title) {
+            lightboxImg.src = url;
+            lightboxTitle.innerText = title;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+
+            // Set copy handler
+            lightboxCopyBtn.onclick = () => copyToClipboard(url);
+
+            // Set download handler
+            lightboxDownloadBtn.onclick = () => {
+                downloadMedia(url, 'lightbox', 'photo', 'lightbox-download-btn');
+            };
+        }
+
+        function closeLightbox() {
+            lightbox.classList.add('hidden');
+            lightbox.classList.remove('flex');
+            lightboxImg.src = '';
+        }
+
+        // Formatter numerical counts
+        const formatNumber = (num) => {
+            if (num === undefined || num === null) return '0';
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toLocaleString();
+        };
+
+        const formatJoinedDate = (dateString) => {
+            if (!dateString) return null;
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            } catch (e) {
+                return dateString;
             }
         };
 
-        const Lightbox = ({ media, onClose }) => {
-            if (!media) return null;
-            return (
-                <div className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-xl flex items-center justify-center p-4">
-                    <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all"><X size={32} /></button>
-                    <div className="w-full max-w-5xl h-full max-h-[90vh] flex items-center justify-center">
-                        {media.type === 'video' ? (
-                            <video src={media.url} controls autoPlay className="max-w-full max-h-full rounded-lg shadow-2xl border border-gray-800" />
-                        ) : (
-                            <img src={media.url} alt="Full view" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-gray-800" />
-                        )}
-                    </div>
-                </div>
-            );
-        };
-
-        const TweetCard = ({ tweet, onRemove, onOpenLightbox }) => {
-            const [currentIndex, setCurrentIndex] = useState(0);
-            const [isCopying, setIsCopying] = useState(false);
-            const [isDownloading, setIsDownloading] = useState(false);
-            
-            const currentMedia = tweet.media[currentIndex];
-
-            const downloadCurrent = async (e) => {
-                e.stopPropagation();
-                if (isDownloading) return;
-                setIsDownloading(true);
-
-                const item = currentMedia;
-                const downloadUrl = item.url;
-                const filename = `${tweet.handle}_${tweet.id}_${currentIndex}.${item.type === 'video' ? 'mp4' : 'jpg'}`;
+        // Helper to compute Account Age string cleanly
+        const calculateAccountAge = (dateString) => {
+            if (!dateString) return '';
+            try {
+                const joinedDate = new Date(dateString);
+                const currentDate = new Date();
                 
-                try {
-                    const blob = await fetchBlobWithProxy(downloadUrl);
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url; 
-                    link.download = filename;
-                    document.body.appendChild(link); 
-                    link.click();
-                    document.body.removeChild(link); 
-                    window.URL.revokeObjectURL(url);
-                } catch (e) { 
-                    window.open(downloadUrl, '_blank'); 
-                } finally {
-                    setIsDownloading(false);
+                let years = currentDate.getFullYear() - joinedDate.getFullYear();
+                let months = currentDate.getMonth() - joinedDate.getMonth();
+                
+                if (months < 0) {
+                    years--;
+                    months += 12;
                 }
-            };
-
-            const copyText = (textToCopy, type = 'link') => {
-                if (!textToCopy) return;
-                const textArea = document.createElement("textarea");
-                textArea.value = textToCopy;
-                textArea.style.position = "fixed"; textArea.style.left = "-9999px";
-                document.body.appendChild(textArea); textArea.focus(); textArea.select();
-                document.execCommand('copy'); document.body.removeChild(textArea);
                 
-                if (type === 'link') {
-                    setIsCopying(true); setTimeout(() => setIsCopying(false), 1500);
+                const yearsStr = years > 0 ? `${years} year${years > 1 ? 's' : ''}` : '';
+                const monthsStr = months > 0 ? `${months} month${months > 1 ? 's' : ''}` : '';
+                
+                if (yearsStr && monthsStr) {
+                    return `Account Age ${yearsStr} ${monthsStr}`;
+                } else if (yearsStr) {
+                    return `Account Age ${yearsStr}`;
+                } else if (monthsStr) {
+                    return `Account Age ${monthsStr}`;
                 } else {
-                    const btn = document.getElementById(`text-copy-${tweet.id}`);
-                    if(btn) { btn.style.color = '#4ade80'; setTimeout(() => btn.style.color = '', 500); }
+                    return 'Account Age < 1 month';
                 }
-            };
-
-            return (
-                <div className="bg-[#111111] border border-[#222] rounded-3xl overflow-hidden shadow-2xl hover:border-gray-700 transition-all duration-300 group relative flex flex-col h-full">
-                    {/* Header */}
-                    <div className="p-4 flex items-center justify-between bg-[#161616] border-b border-[#222]">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full p-[1px] bg-gray-700 overflow-hidden">
-                                {tweet.avatar ? <img src={tweet.avatar} className="w-full h-full object-cover" /> : <User size={20} className="text-gray-400 m-auto" />}
-                            </div>
-                            <div className="flex flex-col text-right">
-                                <span className="font-bold text-sm text-gray-200 leading-tight">{tweet.author}</span>
-                                <span className="text-xs text-gray-500 font-mono">@{tweet.handle}</span>
-                            </div>
-                        </div>
-                        <button onClick={() => onRemove(tweet.id)} className="text-gray-600 hover:text-red-500 p-2 rounded-full hover:bg-red-500/10"><Trash2 size={18} /></button>
-                    </div>
-
-                    {/* Media Viewer */}
-                    <div className="relative aspect-[4/3] bg-black cursor-zoom-in overflow-hidden border-b border-[#222]" onClick={() => onOpenLightbox(currentMedia)}>
-                        <div className="w-full h-full flex items-center justify-center bg-black">
-                            {currentMedia.type === 'video' ? (
-                                <video 
-                                    key={currentMedia.url}
-                                    src={currentMedia.url} 
-                                    className="w-full h-full object-contain" 
-                                    poster={currentMedia.thumb} 
-                                    controls 
-                                    onClick={(e) => e.stopPropagation()} 
-                                    referrerPolicy="no-referrer"
-                                />
-                            ) : (
-                                <img src={currentMedia.url} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                            )}
-                        </div>
-
-                        {/* Pagination */}
-                        {tweet.media.length > 1 && (
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-wrap justify-center gap-2 z-10 px-4">
-                                {tweet.media.map((_, idx) => (
-                                    <button 
-                                        key={idx}
-                                        onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
-                                        className={`media-pagination-btn w-7 h-7 rounded-lg text-[10px] font-bold border ${idx === currentIndex ? 'bg-white text-black border-white shadow-lg' : 'bg-black/40 text-white/70 border-white/10 backdrop-blur-md hover:bg-black/60'}`}
-                                    >
-                                        {idx + 1}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        
-                        <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 border border-white/10 text-gray-200">
-                            {currentMedia.type === 'video' ? <Video size={10} /> : <ImageIcon size={10} />} <span>{currentIndex + 1}/{tweet.media.length}</span>
-                        </div>
-                    </div>
-
-                    {/* Tweet Text */}
-                    {tweet.text && <div className="px-5 py-4 bg-[#111] text-right border-b border-[#222] flex-1"><p className="text-sm text-gray-300 leading-7 whitespace-pre-wrap" dir="auto">{tweet.text}</p></div>}
-
-                    {/* Action Footer */}
-                    <div className="p-3 bg-[#161616] mt-auto flex gap-2 items-center">
-                        <button onClick={downloadCurrent} disabled={isDownloading} className="flex-[2] bg-[#222] hover:bg-[#333] text-gray-200 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all border border-[#333]">
-                            {isDownloading ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />} 
-                            <span>{isDownloading ? 'جاري التحميل..' : 'تحميل'}</span>
-                        </button>
-
-                        <button onClick={() => copyText(currentMedia.url, 'link')} className={`${isCopying ? 'bg-green-900/20 text-green-400 border-green-900/50' : 'bg-[#222] text-gray-400 hover:bg-[#333] border-[#333]'} flex-1 border py-2.5 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 transition-all`}>
-                            {isCopying ? <Check size={14} /> : <Copy size={14} />} <span>{isCopying ? 'منسوخ' : 'رابط'}</span>
-                        </button>
-
-                        <button id={`text-copy-${tweet.id}`} onClick={() => copyText(tweet.text, 'text')} className="bg-[#222] text-gray-500 hover:text-white hover:bg-[#333] border border-[#333] w-10 h-10 rounded-xl flex items-center justify-center transition-all flex-shrink-0" title="نسخ النص">
-                            <FileText size={14} />
-                        </button>
-                    </div>
-                </div>
-            );
+            } catch (e) {
+                return '';
+            }
         };
 
-        const App = () => {
-            const [input, setInput] = useState('');
-            const [tweets, setTweets] = useState([]);
-            const [isProcessing, setIsProcessing] = useState(false);
-            const [lightboxMedia, setLightboxMedia] = useState(null);
-
-            useEffect(() => {
-                const saved = localStorage.getItem('x-media-deck-data');
-                if (saved) { try { setTweets(JSON.parse(saved)); } catch (e) {} }
-            }, []);
-
-            useEffect(() => { localStorage.setItem('x-media-deck-data', JSON.stringify(tweets)); }, [tweets]);
-
-            const extractTweetId = (urlInput) => {
-                try {
-                    let safeUrl = urlInput.trim();
-                    if (!safeUrl.startsWith('http')) safeUrl = `https://${safeUrl}`;
-                    const urlObj = new URL(safeUrl);
-                    if (urlObj.hostname.includes('twitter.com') || urlObj.hostname.includes('x.com')) {
-                        const pathSegments = urlObj.pathname.split('/');
-                        const statusIndex = pathSegments.indexOf('status');
-                        if (statusIndex !== -1 && pathSegments[statusIndex + 1]) return pathSegments[statusIndex + 1];
-                    }
-                    return null;
-                } catch (e) { return null; }
-            };
-
-            const fetchTweetData = async (id) => {
-                try {
-                    const response = await fetch(`https://api.fxtwitter.com/status/${id}`);
-                    if (!response.ok) throw new Error('Network error');
-                    const data = await response.json();
-                    const mediaList = [];
+        // Template Renderer: Profile View
+        function renderProfile(user) {
+            profileContainer.innerHTML = `
+                <div class="bg-white rounded-3xl overflow-hidden border border-japandi-bone shadow-sm">
                     
-                    if (data?.tweet?.media?.videos) {
-                        data.tweet.media.videos.forEach(v => {
-                            mediaList.push({ 
-                                type: 'video', 
-                                url: v.url, 
-                                thumb: v.thumbnail_url
-                            });
-                        });
-                    }
-                    
-                    if (data?.tweet?.media?.photos) {
-                        const hasVideo = mediaList.some(m => m.type === 'video');
-                        if (!hasVideo || mediaList.length === 0) {
-                            data.tweet.media.photos.forEach(p => mediaList.push({ type: 'image', url: p.url, thumb: p.url }));
-                        }
-                    }
-                    
-                    if (mediaList.length === 0) return null;
-                    return {
-                        id: id, text: data.tweet.text, author: data.tweet.author.name, handle: data.tweet.author.screen_name,
-                        avatar: data.tweet.author.avatar_url, media: mediaList, timestamp: Date.now()
-                    };
-                } catch (error) { return null; }
-            };
+                    <!-- Banner -->
+                    <div id="prof-banner" class="h-44 md:h-56 w-full relative bg-japandi-bg cursor-pointer group overflow-hidden" title="Click to view full Banner">
+                        ${user.banner_url ? `
+                            <img src="${user.banner_url}" alt="Banner" class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+                            <div class="absolute inset-0 bg-stone-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <span class="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-japandi-dark shadow-sm flex items-center space-x-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <span>Expand Banner</span>
+                                </span>
+                            </div>
+                        ` : `
+                            <div class="w-full h-full bg-gradient-to-tr from-japandi-milk to-japandi-bg flex items-center justify-center">
+                                <div class="text-xs text-[#A8A29E] font-medium tracking-wide">No Banner Set</div>
+                            </div>
+                        `}
+                    </div>
 
-            const handlePaste = async () => {
-                try { const text = await navigator.clipboard.readText(); setInput(text); } catch (err) { }
-            };
+                    <!-- Profile Body -->
+                    <div class="p-6 md:p-8 relative">
+                        
+                        <!-- Floating Avatar -->
+                        <div id="prof-avatar" class="absolute -top-16 left-6 md:left-8 cursor-pointer group" title="Click to view full Avatar">
+                            <div class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white bg-white shadow-md overflow-hidden relative">
+                                <img src="${user.avatar_url?.replace('_normal', '_400x400') || user.avatar_url}" alt="${user.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                <div class="absolute inset-0 bg-stone-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
 
-            const handleAddLink = async () => {
-                setIsProcessing(true);
-                const regex = /((https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/[0-9]+)/g;
-                const rawMatches = input.match(regex) || [];
+                        <!-- Header Copy Buttons & Dynamic ID copy slot -->
+                        <div class="flex justify-end items-center mb-6 gap-2.5 h-8 flex-wrap">
+                            <button id="copy-prof-id-btn" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all" title="Click to copy User ID">
+                                <span class="text-stone-400 font-normal">ID:</span>
+                                <span class="text-japandi-dark font-mono font-black">${user.id}</span>
+                            </button>
+                            <button id="copy-prof-url-btn" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l-1.954 1.954a3 3 0 104.243 4.243l1.954-1.954m-3.732-2.136L13.563 8.35a3 3 0 014.243 4.243l-1.954 1.954" />
+                                </svg>
+                                <span>Copy Profile URL</span>
+                            </button>
+                        </div>
+
+                        <!-- Identity Block -->
+                        <div class="mt-4">
+                            <div class="flex items-center space-x-2">
+                                <h2 class="text-2xl md:text-3xl font-extrabold text-japandi-dark font-serif tracking-tight">
+                                    ${user.name}
+                                </h2>
+                                ${user.verified ? `
+                                    <span class="text-japandi-clay inline-block" title="Verified Creator">
+                                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                            <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.94.1-1.348.27C14.825 2.515 13.512 1.5 12 1.5s-2.825 1.015-3.422 2.28c-.407-.17-.867-.27-1.348-.27-2.108 0-3.818 1.78-3.818 3.99 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .94-.1 1.348-.27.597 1.265 1.91 2.28 3.422 2.28s2.825-1.015 3.422-2.28c.407.17.867.27 1.348.27 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.5 4L6 12.5l1.5-1.5 2.5 2.5 6.5-6.5 1.5 1.5-8 8z" />
+                                        </svg>
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <p class="text-japandi-clay text-base font-semibold mt-0.5">@${user.screen_name}</p>
+                        </div>
+
+                        <!-- Profile Bio -->
+                        ${user.description ? `
+                            <div class="mt-5 text-sm md:text-base text-[#44403C] leading-relaxed max-w-2xl whitespace-pre-line border-l-2 border-japandi-bone pl-4">
+                                ${user.description}
+                            </div>
+                        ` : ''}
+
+                        <!-- Account Location, Join Date & Account Age badges -->
+                        <div class="flex flex-wrap gap-3 mt-6 pt-1 text-xs text-japandi-stone">
+                            <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
+                                <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span class="font-semibold text-stone-400">The account is located in:</span>
+                                <span class="text-japandi-dark font-medium">${user.location || "Not Specified"}</span>
+                            </div>
+
+                            <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
+                                <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span class="font-semibold text-stone-400">Joined:</span>
+                                <span class="text-japandi-dark font-medium">${formatJoinedDate(user.joined) || "N/A"}</span>
+                            </div>
+
+                            ${user.joined ? `
+                            <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
+                                <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-japandi-dark font-medium">${calculateAccountAge(user.joined)}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Metrics Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-japandi-bg">
+                            <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
+                                <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Followers</p>
+                                <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.followers)}</p>
+                            </div>
+                            <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
+                                <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Following</p>
+                                <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.following)}</p>
+                            </div>
+                            <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
+                                <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Total Posts</p>
+                                <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.tweets)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Dynamic event triggers for profile clicking Zoom Lightbox
+            const bannerDiv = document.getElementById('prof-banner');
+            if (bannerDiv && user.banner_url) {
+                bannerDiv.addEventListener('click', () => openLightbox(user.banner_url, `${user.name}'s Banner`));
+            }
+
+            const avatarDiv = document.getElementById('prof-avatar');
+            if (avatarDiv) {
+                avatarDiv.addEventListener('click', () => openLightbox(user.avatar_url?.replace('_normal', ''), `${user.name}'s Avatar`));
+            }
+
+            document.getElementById('copy-prof-url-btn').addEventListener('click', () => {
+                copyToClipboard(`https://x.com/${user.screen_name}`);
+            });
+
+            document.getElementById('copy-prof-id-btn').addEventListener('click', () => {
+                copyToClipboard(user.id);
+            });
+        }
+
+        // Template Renderer: Post / Tweet Media View
+        function renderPost(tweet) {
+            let mediaGridHtml = '';
+            let downloadableResourcesHtml = '';
+
+            // 1. Process Media Attachments
+            if (tweet.media && tweet.media.all && tweet.media.all.length > 0) {
+                const cols = tweet.media.all.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
                 
-                if (rawMatches.length === 0) {
-                    alert("الرابط غير صحيح!");
-                    setIsProcessing(false);
-                    return;
-                }
+                mediaGridHtml = `
+                    <div class="mb-6 rounded-2xl overflow-hidden bg-japandi-bg border border-japandi-bone">
+                        <div class="grid gap-2 ${cols}">
+                `;
 
-                const newTweets = [];
-                const uniqueUrls = [...new Set(rawMatches)];
+                tweet.media.all.forEach((item, idx) => {
+                    if (item.type === 'photo') {
+                        mediaGridHtml += `
+                            <div 
+                                onclick="openLightbox('${item.url}', 'Attached Image #${idx + 1}')"
+                                class="relative group overflow-hidden aspect-video bg-black/5 cursor-pointer"
+                                title="Click to view full image"
+                            >
+                                <img src="${item.url}" alt="Post Attachment ${idx + 1}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <div class="absolute inset-0 bg-stone-900/15 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-japandi-dark shadow-sm flex items-center space-x-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                        <span>Inspect</span>
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    } else if (item.type === 'video' || item.type === 'gif') {
+                        mediaGridHtml += `
+                            <div class="relative aspect-video bg-black flex items-center justify-center col-span-2">
+                                <video controls playsinline class="w-full h-full max-h-[420px] object-contain" poster="${item.thumbnail_url || ''}">
+                                    <source src="${item.url}" type="video/mp4" />
+                                    Your browser does not support playing this video.
+                                </video>
+                            </div>
+                        `;
+                    }
 
-                for (const url of uniqueUrls) {
-                    const id = extractTweetId(url);
-                    if (id && !tweets.some(t => t.id === id)) {
-                        const tweetData = await fetchTweetData(id);
-                        if (tweetData) newTweets.push(tweetData);
+                    // Build download list cards
+                    const btnId = `dl-btn-${idx}`;
+                    downloadableResourcesHtml += `
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-japandi-bg border border-japandi-bone rounded-2xl gap-4 hover:border-japandi-clay transition-all">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-14 h-14 rounded-lg bg-japandi-milk overflow-hidden flex-shrink-0 border border-japandi-bone">
+                                    <img src="${item.thumbnail_url || item.url}" alt="Content Preview" class="w-full h-full object-cover" />
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-japandi-clay/15 text-japandi-clay font-extrabold text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">${item.type}</span>
+                                        <span class="text-xs text-stone-400">Resource #${idx + 1}</span>
+                                    </div>
+                                    <p class="text-xs text-japandi-stone font-mono truncate max-w-[200px] sm:max-w-xs mt-1">
+                                        ${item.url.split('/').pop().split('?')[0] || 'media_asset'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                                <button onclick="copyToClipboard('${item.url}')" class="px-3.5 py-2.5 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:bg-japandi-milk transition-all">
+                                    Copy Link
+                                </button>
+                                <button id="${btnId}" onclick="downloadMedia('${item.url}', ${idx}, '${item.type}', '${btnId}')" class="px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    <span>Download</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                mediaGridHtml += `</div></div>`;
+            }
+
+            postContainer.innerHTML = `
+                <div class="bg-white rounded-3xl border border-japandi-bone shadow-sm overflow-hidden p-6 md:p-8">
+                    <!-- Post Author Segment -->
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="flex items-center space-x-3">
+                            <div id="author-avatar" class="w-12 h-12 rounded-full overflow-hidden border border-japandi-bone cursor-pointer relative group" title="Click to view full Avatar">
+                                <img src="${tweet.author.avatar_url}" alt="${tweet.author.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            </div>
+                            <div>
+                                <div class="flex items-center space-x-1">
+                                    <span id="author-name-btn" class="font-bold text-japandi-dark text-base leading-tight hover:underline cursor-pointer">
+                                        ${tweet.author.name}
+                                    </span>
+                                    ${tweet.author.verified ? `
+                                        <svg class="w-4 h-4 fill-japandi-clay" viewBox="0 0 24 24">
+                                            <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.94.1-1.348.27C14.825 2.515 13.512 1.5 12 1.5s-2.825 1.015-3.422 2.28c-.407-.17-.867-.27-1.348-.27-2.108 0-3.818 1.78-3.818 3.99 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .94-.1 1.348-.27.597 1.265 1.91 2.28 3.422 2.28s2.825-1.015 3.422-2.28c.407.17.867.27 1.348.27 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.5 4L6 12.5l1.5-1.5 2.5 2.5 6.5-6.5 1.5 1.5-8 8z" />
+                                        </svg>
+                                    ` : ''}
+                                </div>
+                                <span class="text-xs text-japandi-clay block">@${tweet.author.screen_name}</span>
+                            </div>
+                        </div>
+                        <button id="share-post-btn" class="p-2.5 rounded-xl border border-japandi-bone bg-japandi-bg text-japandi-stone hover:text-japandi-dark hover:bg-japandi-milk transition-all" title="Copy post link">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l-1.954 1.954a3 3 0 104.243 4.243l1.954-1.954m-3.732-2.136L13.563 8.35a3 3 0 014.243 4.243l-1.954 1.954" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Post Body -->
+                    <div class="text-base md:text-lg text-japandi-dark leading-relaxed mb-6 font-serif select-text whitespace-pre-wrap">${tweet.text}</div>
+
+                    <!-- Render Media Grid -->
+                    ${mediaGridHtml}
+
+                    <!-- Post Meta Date -->
+                    <div class="text-xs text-japandi-clay font-medium border-b border-japandi-bg pb-4 mb-4">
+                        ${new Date(tweet.created_at).toLocaleString(undefined, {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                        })}
+                    </div>
+
+                    <!-- Stats Bar -->
+                    <div class="flex items-center space-x-6 text-sm text-japandi-stone font-bold">
+                        <div class="flex items-center space-x-1.5 hover:text-red-500 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span>${formatNumber(tweet.likes)}</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5 hover:text-green-600 transition-colors">
+                            <!-- Refined retweet icon -->
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                            </svg>
+                            <span>${formatNumber(tweet.retweets)}</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5 hover:text-blue-500 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <span>${formatNumber(tweet.replies)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Downloader block mount -->
+                <div class="bg-white rounded-3xl border border-japandi-bone p-6 md:p-8 shadow-sm mt-8">
+                    <h3 class="text-lg font-serif font-bold text-japandi-dark mb-4 flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>Detected Downloadable Resources</span>
+                    </h3>
+                    ${downloadableResourcesHtml ? `<div class="space-y-4">${downloadableResourcesHtml}</div>` : `
+                        <div class="p-8 text-center bg-japandi-bg rounded-2xl border border-dashed border-japandi-bone">
+                            <p class="text-sm text-japandi-clay">No standard downloadable photos, videos, or GIFs found in this post.</p>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            // Setup custom post view interactive events
+            document.getElementById('author-avatar').addEventListener('click', () => {
+                openLightbox(tweet.author.avatar_url?.replace('_normal', ''), `${tweet.author.name}'s Avatar`);
+            });
+
+            document.getElementById('author-name-btn').addEventListener('click', () => {
+                searchInput.value = `@${tweet.author.screen_name}`;
+                handleSearch(`@${tweet.author.screen_name}`);
+            });
+
+            document.getElementById('share-post-btn').addEventListener('click', () => {
+                copyToClipboard(tweet.url);
+            });
+        }
+
+        // Main Query orchestration
+        const handleSearch = async (forcedQuery = null) => {
+            const queryToUse = forcedQuery || searchInput.value;
+            const parsed = parseInput(queryToUse);
+
+            if (!parsed) {
+                setError("Please enter a valid @username, X Profile link, or Tweet Status URL.");
+                return;
+            }
+
+            toggleLoading(true);
+            setError(null);
+            profileContainer.innerHTML = '';
+            postContainer.innerHTML = '';
+
+            try {
+                if (parsed.type === 'post') {
+                    const url = `https://api.fxtwitter.com/status/${parsed.id}`;
+                    const data = await fetchJsonWithProxy(url);
+                    
+                    if (data && data.tweet) {
+                        state.postData = data.tweet;
+                        state.dataType = 'post';
+                        renderPost(data.tweet);
+                        saveToHistory({ query: queryToUse, type: 'post', label: parsed.display, timestamp: Date.now() });
+                    } else {
+                        throw new Error(data.message || "Failed to retrieve this post. It might be private or deleted.");
+                    }
+                } else if (parsed.type === 'profile') {
+                    const url = `https://api.fxtwitter.com/${parsed.username}`;
+                    const data = await fetchJsonWithProxy(url);
+
+                    if (data && data.user) {
+                        state.profileData = data.user;
+                        state.dataType = 'profile';
+                        renderProfile(data.user);
+                        saveToHistory({ query: queryToUse, type: 'profile', label: parsed.display, timestamp: Date.now() });
+                    } else {
+                        throw new Error(data.message || `No user found with the username @${parsed.username}.`);
                     }
                 }
-
-                setTweets(prev => [...newTweets, ...prev]);
-                setInput('');
-                setIsProcessing(false);
-            };
-
-            return (
-                <div className="min-h-screen flex flex-col items-center p-4 sm:p-8 overflow-x-hidden">
-                    {lightboxMedia && <Lightbox media={lightboxMedia} onClose={() => setLightboxMedia(null)} />}
-
-                    <header className="w-full max-w-5xl flex justify-between items-center mb-10 z-10">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-[#111] border border-[#333] text-white p-3 rounded-2xl shadow-xl"><X size={24} strokeWidth={3} /></div>
-                            <div className="text-right">
-                                <h1 className="text-2xl font-bold text-white">تنزيل االوسائط من X</h1>
-                                <p className="text-xs text-gray-600 font-mono tracking-widest">X Media Downloader</p>
-                            </div>
-                        </div>
-                        {tweets.length > 0 && (
-                            <button onClick={() => setTweets([])} className="bg-[#111] border border-[#333] text-gray-400 hover:text-red-400 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors">
-                                <Trash2 size={14} /> تنظيف الكل
-                            </button>
-                        )}
-                    </header>
-
-                    <main className="w-full max-w-5xl space-y-8 z-10 flex-1">
-                        <div className="bg-[#111] border border-[#333] rounded-3xl p-2 pl-3 flex gap-2 shadow-lg">
-                            <button onClick={handlePaste} className="sm:hidden bg-[#222] text-gray-300 p-3 rounded-xl hover:bg-[#333]"><Clipboard size={20} /></button>
-                            <input 
-                                type="text" value={input} onChange={(e) => setInput(e.target.value)} 
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddLink()} 
-                                placeholder="أدخل رابط X أو Twitter..." 
-                                className="flex-1 bg-transparent border-none text-gray-200 px-3 py-3 focus:ring-0 placeholder-gray-700 text-sm font-medium text-right outline-none truncate" 
-                            />
-                            <button onClick={handleAddLink} disabled={isProcessing || !input.trim()} className={`px-6 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all ${isProcessing ? 'bg-[#222] text-gray-500' : 'bg-white text-black hover:bg-gray-200'}`}>
-                                {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <Plus size={20} />} <span>إضافة</span>
-                            </button>
-                        </div>
-
-                        {tweets.length > 0 && <div className="flex justify-between px-4 text-[10px] uppercase font-bold text-gray-600 tracking-widest"><span>CARDS: {tweets.length}</span><span className="flex gap-1 items-center"><Zap size={10} /> LIVE SYNC</span></div>}
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
-                            {tweets.map((tweet) => <TweetCard key={tweet.id} tweet={tweet} onRemove={(id) => setTweets(t => t.filter(x => x.id !== id))} onOpenLightbox={setLightboxMedia} />)}
-                        </div>
-
-                        {tweets.length === 0 && !isProcessing && (
-                            <div className="text-center py-32 opacity-20 flex flex-col items-center">
-                                <Globe size={48} className="text-gray-500 mb-4" />
-                                <h3 className="text-xl font-bold text-gray-300 uppercase tracking-[0.2em]">Ready for input</h3>
-                            </div>
-                        )}
-                    </main>
-
-                    <footer className="w-full max-w-5xl border-t border-white/5 py-8 mt-12 flex flex-col items-center gap-2 opacity-50">
-                        <div className="flex items-center gap-2 text-xs font-mono text-gray-500 uppercase tracking-widest">
-                            <span>Developed By</span>
-                            <span className="bg-white text-black px-2 py-0.5 rounded font-bold">Dev By Instagram @eukc</span>
-                        </div>
-                        <p className="text-[10px] text-gray-700">© 2026 X MEDIA DECK. ALL RIGHTS RESERVED.</p>
-                    </footer>
-                </div>
-            );
+            } catch (err) {
+                console.error(err);
+                setError(err.message || "Something went wrong while fetching data. Please try again.");
+            } finally {
+                toggleLoading(false);
+            }
         };
 
-        const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Error message controller
+        function setError(msg) {
+            if (msg) {
+                errorText.innerText = msg;
+                errorBox.classList.remove('hidden');
+                errorBox.classList.add('flex');
+            } else {
+                errorBox.classList.add('hidden');
+                errorBox.classList.remove('flex');
+            }
+        }
+
+        // Global Action Event Listeners
+        searchBtn.addEventListener('click', () => handleSearch());
+        
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value.trim().length > 0) {
+                clearInputBtn.classList.remove('hidden');
+                clearInputBtn.classList.add('flex');
+            } else {
+                clearInputBtn.classList.add('hidden');
+                clearInputBtn.classList.remove('flex');
+            }
+        });
+
+        clearInputBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearInputBtn.classList.add('hidden');
+            searchInput.focus();
+        });
+
+        errorDismissBtn.addEventListener('click', () => setError(null));
+
+        clearHistoryBtn.addEventListener('click', () => {
+            state.searchHistory = [];
+            try {
+                localStorage.removeItem('komorebi_x_history');
+            } catch (e) {}
+            renderHistory();
+        });
+
+        // Lightbox modal close listeners
+        closeLightboxBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (e) => {
+            // Only close if we clicked the backdrop, not the modal content itself
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        // Run Local storage checks on initial application load
+        initHistory();
+
     </script>
 </body>
 </html>
