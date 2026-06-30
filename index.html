@@ -605,6 +605,47 @@
 
         // Template Renderer: Profile View
         function renderProfile(user) {
+            // Determine if the account is a verified business/organization
+            const isBusiness = user.verified_type === 'business' || 
+                             user.verified_type === 'organization' || 
+                             (user.verified && (
+                                 user.screen_name.toLowerCase().includes('games') || 
+                                 user.screen_name.toLowerCase().includes('rockstar') || 
+                                 user.name.toLowerCase().includes('games') || 
+                                 user.screen_name.toLowerCase().includes('playstation') || 
+                                 user.screen_name.toLowerCase().includes('xbox') || 
+                                 user.screen_name.toLowerCase().includes('nintendo') ||
+                                 user.screen_name.toLowerCase() === 'x'
+                             ));
+
+            // Set up appropriate avatar shape
+            const avatarBorderClass = isBusiness 
+                ? 'rounded-3xl border-4 border-white bg-white shadow-md overflow-hidden relative' 
+                : 'rounded-full border-4 border-white bg-white shadow-md overflow-hidden relative';
+
+            // Select verification badge template (Gold for business, standard blue for others)
+            let verificationBadgeHtml = '';
+            if (user.verified) {
+                if (isBusiness) {
+                    verificationBadgeHtml = `
+                        <span class="text-[#E7B820] inline-block" title="Verified Business">
+                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="18" height="18" rx="5.5" />
+                                <path d="M9.5 15.5l-3.5-3.5 1.4-1.4 2.1 2.1 5.6-5.6 1.4 1.4-7 7z" fill="#FAF8F5" />
+                            </svg>
+                        </span>
+                    `;
+                } else {
+                    verificationBadgeHtml = `
+                        <span class="text-[#1D9BF0] inline-block" title="Verified Creator">
+                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.94.1-1.348.27C14.825 2.515 13.512 1.5 12 1.5s-2.825 1.015-3.422 2.28c-.407-.17-.867-.27-1.348-.27-2.108 0-3.818 1.78-3.818 3.99 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .94-.1 1.348-.27.597 1.265 1.91 2.28 3.422 2.28s2.825-1.015 3.422-2.28c.407.17.867.27 1.348.27 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.5 4L6 12.5l1.5-1.5 2.5 2.5 6.5-6.5 1.5 1.5-8 8z" />
+                            </svg>
+                        </span>
+                    `;
+                }
+            }
+
             profileContainer.innerHTML = `
                 <div class="bg-white rounded-3xl overflow-hidden border border-japandi-bone shadow-sm">
                     
@@ -631,8 +672,8 @@
                     <div class="p-6 md:p-8 relative">
                         
                         <!-- Floating Avatar -->
-                        <div id="prof-avatar" class="absolute -top-16 left-6 md:left-8 cursor-pointer group" title="Click to view full Avatar">
-                            <div class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white bg-white shadow-md overflow-hidden relative">
+                        <div id="prof-avatar" class="absolute -top-16 left-6 md:left-8 cursor-pointer group z-10" title="Click to view full Avatar">
+                            <div class="${avatarBorderClass} w-24 h-24 md:w-28 md:h-28">
                                 <img src="${user.avatar_url?.replace('_normal', '_400x400') || user.avatar_url}" alt="${user.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                 <div class="absolute inset-0 bg-stone-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                     <svg class="w-6 h-6 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -642,94 +683,92 @@
                             </div>
                         </div>
 
-                        <!-- Clean vertical deck layout on mobile to prevent overflow/distortion, row on desktop -->
-                        <div class="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 mb-6 w-full">
-                            <button id="copy-prof-id-btn" class="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all" title="Click to copy User ID">
-                                <span class="text-stone-400 font-normal">ID:</span>
-                                <span class="text-japandi-dark font-mono font-black">${user.id}</span>
-                            </button>
-                            <button id="copy-prof-url-btn" class="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l-1.954 1.954a3 3 0 104.243 4.243l1.954-1.954m-3.732-2.136L13.563 8.35a3 3 0 014.243 4.243l-1.954 1.954" />
-                                </svg>
-                                <span>Copy Profile URL</span>
-                            </button>
-                            <a href="https://x.com/${user.screen_name}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-clay bg-japandi-dark text-xs font-bold text-japandi-bg hover:bg-[#3F3A36] transition-all">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M18.244 2.25h3.308l-10.916 12.48L23.4 22.25h-6.656l-5.214-6.817L4.99 22.25H1.68l11.73-13.41L1.69 2.25h6.82l4.7 6.37L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
-                                </svg>
-                                <span>View on X</span>
-                            </a>
-                        </div>
+                        <!-- Spacer container: pt-14 on mobile ensures all content and stacked buttons are pushed safely below the absolute avatar -->
+                        <div class="pt-14 sm:pt-0">
+                            <!-- Clean vertical deck layout on mobile to prevent overflow/distortion, row on desktop -->
+                            <div class="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 mb-6 w-full">
+                                <button id="copy-prof-id-btn" class="inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all" title="Click to copy User ID">
+                                    <span class="text-stone-400 font-normal">ID:</span>
+                                    <span class="text-japandi-dark font-mono font-black">${user.id}</span>
+                                </button>
+                                <button id="copy-prof-url-btn" class="inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l-1.954 1.954a3 3 0 104.243 4.243l1.954-1.954m-3.732-2.136L13.563 8.35a3 3 0 014.243 4.243l-1.954 1.954" />
+                                    </svg>
+                                    <span>Copy Profile URL</span>
+                                </button>
+                                <a href="https://x.com/${user.screen_name}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl border border-japandi-clay bg-japandi-dark text-xs font-bold text-japandi-bg hover:bg-[#3F3A36] transition-all">
+                                    <span>View on</span>
+                                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                        <path d="M18.244 2.25h3.308l-10.916 12.48L23.4 22.25h-6.656l-5.214-6.817L4.99 22.25H1.68l11.73-13.41L1.69 2.25h6.82l4.7 6.37L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+                                    </svg>
+                                </a>
+                            </div>
 
-                        <!-- Identity Block -->
-                        <div class="mt-4">
-                            <div class="flex items-center space-x-2">
-                                <h2 class="text-2xl md:text-3xl font-extrabold text-japandi-dark font-serif tracking-tight">
-                                    ${user.name}
-                                </h2>
-                                ${user.verified ? `
-                                    <span class="text-japandi-clay inline-block" title="Verified Creator">
-                                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                                            <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.99-3.818-3.99-.48 0-.94.1-1.348.27C14.825 2.515 13.512 1.5 12 1.5s-2.825 1.015-3.422 2.28c-.407-.17-.867-.27-1.348-.27-2.108 0-3.818 1.78-3.818 3.99 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.71 3.99 3.818 3.99.48 0 .94-.1 1.348-.27.597 1.265 1.91 2.28 3.422 2.28s2.825-1.015 3.422-2.28c.407.17.867.27 1.348.27 2.108 0 3.818-1.78 3.818-3.99 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6zm-12.5 4L6 12.5l1.5-1.5 2.5 2.5 6.5-6.5 1.5 1.5-8 8z" />
-                                        </svg>
-                                    </span>
+                            <!-- Identity Block -->
+                            <div class="mt-4">
+                                <div class="flex items-center space-x-2">
+                                    <h2 class="text-2xl md:text-3xl font-extrabold text-japandi-dark font-serif tracking-tight">
+                                        ${user.name}
+                                    </h2>
+                                    ${verificationBadgeHtml}
+                                </div>
+                                <p class="text-japandi-clay text-base font-semibold mt-0.5">@${user.screen_name}</p>
+                            </div>
+
+                            <!-- Profile Bio -->
+                            ${user.description ? `
+                                <div class="mt-5 text-sm md:text-base text-[#44403C] leading-relaxed max-w-2xl whitespace-pre-line border-l-2 border-japandi-bone pl-4">
+                                    ${user.description}
+                                </div>
+                            ` : ''}
+
+                            <!-- Account Location, Join Date & Account Age badges -->
+                            <div class="flex flex-wrap gap-3 mt-6 pt-1 text-xs text-japandi-stone">
+                                <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
+                                    <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span class="font-semibold text-stone-400">The account is located in:</span>
+                                    <span class="text-japandi-dark font-medium">${user.location || "Not Specified"}</span>
+                                </div>
+
+                                <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
+                                    <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="font-semibold text-stone-400">Joined:</span>
+                                    <span class="text-japandi-dark font-medium">${formatJoinedDate(user.joined) || "N/A"}</span>
+                                </div>
+
+                                ${user.joined ? `
+                                <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
+                                    <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-japandi-dark font-medium">${calculateAccountAge(user.joined)}</span>
+                                </div>
                                 ` : ''}
                             </div>
-                            <p class="text-japandi-clay text-base font-semibold mt-0.5">@${user.screen_name}</p>
+
+                            <!-- Metrics Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-japandi-bg">
+                                <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
+                                    <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Followers</p>
+                                    <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.followers)}</p>
+                                </div>
+                                <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
+                                    <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Following</p>
+                                    <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.following)}</p>
+                                </div>
+                                <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
+                                    <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Total Posts</p>
+                                    <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.tweets)}</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Profile Bio -->
-                        ${user.description ? `
-                            <div class="mt-5 text-sm md:text-base text-[#44403C] leading-relaxed max-w-2xl whitespace-pre-line border-l-2 border-japandi-bone pl-4">
-                                ${user.description}
-                            </div>
-                        ` : ''}
-
-                        <!-- Account Location, Join Date & Account Age badges -->
-                        <div class="flex flex-wrap gap-3 mt-6 pt-1 text-xs text-japandi-stone">
-                            <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
-                                <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span class="font-semibold text-stone-400">The account is located in:</span>
-                                <span class="text-japandi-dark font-medium">${user.location || "Not Specified"}</span>
-                            </div>
-
-                            <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
-                                <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span class="font-semibold text-stone-400">Joined:</span>
-                                <span class="text-japandi-dark font-medium">${formatJoinedDate(user.joined) || "N/A"}</span>
-                            </div>
-
-                            ${user.joined ? `
-                            <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
-                                <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span class="text-japandi-dark font-medium">${calculateAccountAge(user.joined)}</span>
-                            </div>
-                            ` : ''}
-                        </div>
-
-                        <!-- Metrics Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-6 border-t border-japandi-bg">
-                            <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
-                                <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Followers</p>
-                                <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.followers)}</p>
-                            </div>
-                            <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
-                                <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Following</p>
-                                <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.following)}</p>
-                            </div>
-                            <div class="bg-japandi-bg rounded-2xl p-4 border border-japandi-bone/50 text-center">
-                                <p class="text-xs font-bold uppercase tracking-widest text-japandi-clay">Total Posts</p>
-                                <p class="text-xl md:text-2xl font-black text-japandi-dark mt-1">${formatNumber(user.tweets)}</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             `;
