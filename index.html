@@ -57,10 +57,13 @@
         <header class="text-center mb-10 md:mb-14">
             <div class="inline-flex items-center justify-center space-x-2 bg-japandi-milk px-3.5 py-1.5 rounded-full border border-japandi-bone mb-4 text-japandi-clay text-xs font-semibold uppercase tracking-wider">
                 <span class="w-2 h-2 rounded-full bg-japandi-clay inline-block"></span>
-                <span>Minimalist X Engine</span>
+                <span>Minimalist Engine</span>
             </div>
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-japandi-dark font-serif mb-3">
-                Komorebi <span class="text-japandi-clay font-light">X</span>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-japandi-dark font-serif mb-3 flex items-center justify-center">
+                <span>Komorebi</span>
+                <svg class="w-8 h-8 md:w-10 md:h-10 fill-japandi-clay ml-2.5" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-10.916 12.48L23.4 22.25h-6.656l-5.214-6.817L4.99 22.25H1.68l11.73-13.41L1.69 2.25h6.82l4.7 6.37L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+                </svg>
             </h1>
             <p class="text-japandi-stone max-w-lg mx-auto text-sm md:text-base leading-relaxed">
                 A serene, raw-crafted tool to query X/Twitter profiles, analyze metadata, and download media seamlessly through smart fallbacks.
@@ -204,7 +207,7 @@
 
         <!-- Footer -->
         <footer class="text-center mt-12 md:mt-20 text-xs text-stone-400 space-y-2">
-            <p>© <span id="year"></span> Komorebi X. Crafted with peaceful, warm minimalist aesthetic guidelines.</p>
+            <p>© <span id="year"></span> Komorebi. Crafted with peaceful, warm minimalist aesthetic guidelines.</p>
             <p>Powered by FixTweet, AllOrigins, and CORS Proxy. No Twitter API key is required.</p>
         </footer>
 
@@ -269,7 +272,7 @@
         // Set dynamic footer year
         document.getElementById('year').innerText = new Date().getFullYear();
 
-        // Proxies for CORS bypass & file downloads (corsproxy.io is primary for high-speed streaming)
+        // Proxies for CORS bypass & file downloads (Matches perfect download engine)
         const CORS_PROXIES = [
             (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
             (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
@@ -333,12 +336,12 @@
                 document.execCommand('copy');
                 triggerToast("Copied to clipboard!");
             } catch (err) {
-                triggerToast("Failed to copy link.");
+                triggerToast("Failed to copy.");
             }
             document.body.removeChild(el);
         }
 
-        // Fetch utilities
+        // Perfect CORS-aware blob downloader logic
         const fetchBlobWithProxy = async (url) => {
             let lastError;
             for (const proxyFunc of CORS_PROXIES) {
@@ -347,11 +350,17 @@
                     const response = await fetch(proxyUrl);
                     if (!response.ok) throw new Error(`Proxy failed: ${response.status}`);
                     return await response.blob();
-                } catch (err) {
-                    lastError = err;
+                } catch (e) {
+                    lastError = e;
                 }
             }
-            throw lastError || new Error("Failed to fetch via all available proxies");
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Direct fetch failed');
+                return await response.blob();
+            } catch (e) {
+                throw lastError || e;
+            }
         };
 
         const fetchJsonWithProxy = async (url) => {
@@ -470,7 +479,7 @@
             });
         }
 
-        // Universal Download handler with ultra-reliable fallback channels
+        // Universal Download handler (No popup media redirects, direct download dialog)
         async function downloadMedia(mediaUrl, index, mediaType, btnElementId) {
             const btn = document.getElementById(btnElementId);
             if (!btn) return;
@@ -484,34 +493,17 @@
 
             try {
                 btn.innerHTML = `<span class="animate-pulse">Downloading...</span>`;
-                
-                let blob;
-                // specialized image optimization bypass
-                if (mediaType === 'photo') {
-                    try {
-                        const imageProxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(mediaUrl)}`;
-                        const response = await fetch(imageProxyUrl);
-                        if (!response.ok) throw new Error("Image proxy failed");
-                        blob = await response.blob();
-                    } catch (e) {
-                        console.warn("Specialized image proxy failed, falling back to general proxies", e);
-                        blob = await fetchBlobWithProxy(mediaUrl);
-                    }
-                } else {
-                    blob = await fetchBlobWithProxy(mediaUrl);
-                }
-                
+                const blob = await fetchBlobWithProxy(mediaUrl);
                 const blobUrl = URL.createObjectURL(blob);
+                
                 const downloadLink = document.createElement('a');
                 downloadLink.href = blobUrl;
                 downloadLink.download = filename;
-                
-                // No target="_blank" to ensure the browser does not open the link as a page stream, starting instant download
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 
                 document.body.removeChild(downloadLink);
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 150);
 
                 btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-clay text-japandi-bg transition-all flex items-center space-x-2 min-w-[120px] justify-center";
                 btn.innerHTML = `
@@ -529,32 +521,12 @@
                 }, 4000);
 
             } catch (err) {
-                console.warn("Iframe or sandbox restricted direct blob fetch. Using instant proxy-tunnel trigger...", err);
+                console.error("Direct blob save restricted, launching direct link stream:", err);
+                window.open(mediaUrl, '_blank');
                 
-                // Let the browser handle proxy-download tunnel without opening blank tabs
-                const proxyDownloadUrl = `https://corsproxy.io/?${encodeURIComponent(mediaUrl)}`;
-                const downloadLink = document.createElement('a');
-                downloadLink.href = proxyDownloadUrl;
-                downloadLink.download = filename;
-                
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-
-                btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-clay text-japandi-bg transition-all flex items-center space-x-2 min-w-[120px] justify-center";
-                btn.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Started</span>
-                `;
-                triggerToast("Download initiated via proxy tunnel!");
-
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center";
-                    btn.innerHTML = origContent;
-                }, 4000);
+                btn.disabled = false;
+                btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center";
+                btn.innerHTML = origContent;
             }
         }
 
@@ -588,17 +560,18 @@
             return num.toLocaleString();
         };
 
+        // Formats the join date explicitly into clean English
         const formatJoinedDate = (dateString) => {
             if (!dateString) return null;
             try {
                 const date = new Date(dateString);
-                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
             } catch (e) {
                 return dateString;
             }
         };
 
-        // Helper to compute Account Age string cleanly
+        // Computes Account Age dynamically (e.g., "1 year 4 months")
         const calculateAccountAge = (dateString) => {
             if (!dateString) return '';
             try {
@@ -669,18 +642,24 @@
                             </div>
                         </div>
 
-                        <!-- Header Copy Buttons & Dynamic ID copy slot -->
-                        <div class="flex justify-end items-center mb-6 gap-2.5 h-8 flex-wrap">
-                            <button id="copy-prof-id-btn" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all" title="Click to copy User ID">
+                        <!-- Clean vertical deck layout on mobile to prevent overflow/distortion, row on desktop -->
+                        <div class="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 mb-6 w-full">
+                            <button id="copy-prof-id-btn" class="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all" title="Click to copy User ID">
                                 <span class="text-stone-400 font-normal">ID:</span>
                                 <span class="text-japandi-dark font-mono font-black">${user.id}</span>
                             </button>
-                            <button id="copy-prof-url-btn" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all">
+                            <button id="copy-prof-url-btn" class="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 10.742l-1.954 1.954a3 3 0 104.243 4.243l1.954-1.954m-3.732-2.136L13.563 8.35a3 3 0 014.243 4.243l-1.954 1.954" />
                                 </svg>
                                 <span>Copy Profile URL</span>
                             </button>
+                            <a href="https://x.com/${user.screen_name}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl border border-japandi-clay bg-japandi-dark text-xs font-bold text-japandi-bg hover:bg-[#3F3A36] transition-all">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-10.916 12.48L23.4 22.25h-6.656l-5.214-6.817L4.99 22.25H1.68l11.73-13.41L1.69 2.25h6.82l4.7 6.37L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+                                </svg>
+                                <span>View on X</span>
+                            </a>
                         </div>
 
                         <!-- Identity Block -->
@@ -906,7 +885,6 @@
                             <span>${formatNumber(tweet.likes)}</span>
                         </div>
                         <div class="flex items-center space-x-1.5 hover:text-green-600 transition-colors">
-                            <!-- Refined retweet icon -->
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                             </svg>
