@@ -45,8 +45,8 @@
 </head>
 <body class="min-h-screen bg-japandi-bg text-japandi-dark font-sans antialiased selection:bg-japandi-bone">
 
-    <!-- Decorative Top Accent Bar -->
-    <div class="h-1.5 w-full bg-japandi-clay"></div>
+    <!-- Animated wave hero -->
+    <div id="wave-hero" class="relative w-full overflow-hidden" style="position:relative;overflow:hidden;width:100%;height:clamp(100px,14vw,150px);background:#FAF8F5" aria-hidden="true"><canvas id="aurora-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas></div>
 
     <!-- ==========================================
          2. HTML LAYOUT SECTION
@@ -90,7 +90,7 @@
                             <input
                                 id="search-input"
                                 type="text"
-                                placeholder="e.g. @naval, profile URL, or a tweet/status link"
+                                placeholder="e.g. @naval, profile URL, tweet link, or direct twimg media link"
                                 class="w-full bg-japandi-bg border border-japandi-bone text-japandi-dark rounded-2xl pl-12 pr-12 py-4 focus:ring-2 focus:ring-japandi-clay focus:border-japandi-clay outline-none transition-all placeholder:text-[#A8A29E] text-base"
                             />
                             <button 
@@ -123,8 +123,8 @@
                     <div class="flex flex-wrap items-center gap-2 pt-2 text-xs text-japandi-stone">
                         <span class="font-semibold text-stone-400">Supported Syntax:</span>
                         <span class="bg-japandi-bg px-2.5 py-1 rounded-md border border-japandi-bone">@handle</span>
-                        <span class="bg-japandi-bg px-2.5 py-1 rounded-md border border-japandi-bone">x.com/user</span>
                         <span class="bg-japandi-bg px-2.5 py-1 rounded-md border border-japandi-bone">x.com/user/status/id</span>
+                        <span class="bg-japandi-bg px-2.5 py-1 rounded-md border border-japandi-bone">Direct Twimg Links</span>
                     </div>
                 </div>
             </section>
@@ -208,8 +208,35 @@
         <!-- Footer -->
         <footer class="text-center mt-12 md:mt-20 text-xs text-stone-400 space-y-2">
             <p>© <span id="year"></span> Komorebi. Crafted with peaceful, warm minimalist aesthetic guidelines.</p>
-            <p>Powered by FixTweet, AllOrigins, and CORS Proxy. No Twitter API key is required.</p>
+            <p>Powered by FixTweet and public CORS proxies. No Twitter API key is required.</p>
         </footer>
+
+        <!-- Developer credit (independent of the site theme) -->
+        <style>
+            .devcredit{display:flex;flex-direction:column;align-items:center;gap:14px;margin:36px auto 8px;padding:22px 20px 0;font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:relative}
+            .devcredit::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:64px;height:1px;background:linear-gradient(90deg,transparent,#a8a29e,transparent)}
+            .devcredit-label{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#8a8580;font-weight:600}
+            .devcredit-label b{color:#1C1917;font-weight:800;letter-spacing:.28em}
+            .devcredit-links{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+            .dc-btn{display:inline-flex;align-items:center;gap:10px;padding:9px 16px 9px 12px;border-radius:999px;background:#F4EFE6;color:#1C1917;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:.02em;border:1px solid #E7E2D8;transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s,background .25s,border-color .25s}
+            .dc-btn svg{width:18px;height:18px;flex:none;fill:#8C7A6B;transition:fill .25s}
+            .dc-btn span small{font-weight:600;color:#8C7A6B;margin-right:4px;font-size:11px;letter-spacing:.12em}
+            .dc-btn:hover{transform:translateY(-3px);background:#FFFDFB;border-color:#8C7A6B;box-shadow:0 10px 24px -10px rgba(140,122,107,.55)}
+            .dc-btn:hover svg{fill:#1C1917}
+        </style>
+        <div class="devcredit" dir="ltr">
+            <div class="devcredit-label">Developed by <b>Asad</b></div>
+            <div class="devcredit-links">
+                <a class="dc-btn dc-ig" href="https://www.instagram.com/eukc" target="_blank" rel="noopener noreferrer" aria-label="Instagram @eukc">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8C2.4 3.9 4 2.4 7.2 2.3 8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.6 6.8 7 7C8.3 24 8.7 24 12 24s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7 .1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.6-6.8-7-7C15.700 0 15.300 0 12 0zm0 5.8a6.2 6.2 0 100 12.400 6.200 6.200 0 000-12.400zM12 16a4 4 0 110-8 4 4 0 010 8zm6.400-11.800a1.400 1.400 0 100 2.900 1.400 1.400 0 000-2.900z"/></svg>
+                    <span><small>INSTAGRAM</small>@eukc</span>
+                </a>
+                <a class="dc-btn dc-x" href="https://x.com/Asad3mr" target="_blank" rel="noopener noreferrer" aria-label="X @Asad3mr">
+                    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.260 8.502 11.240H16.170l-5.214-6.817L4.990 22.250H1.680l7.730-8.835L1.254 2.250H8.080l4.713 6.231zm-1.161 17.520h1.833L7.084 4.126H5.117z"/></svg>
+                    <span><small>X</small>@Asad3mr</span>
+                </a>
+            </div>
+        </div>
 
     </div>
 
@@ -256,6 +283,70 @@
         </div>
     </div>
 
+    <!-- Trim Editor Modal -->
+    <div id="trim-modal" class="fixed inset-0 z-50 bg-[#1C1917]/95 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="relative max-w-2xl w-full bg-japandi-bg rounded-3xl border border-japandi-bone shadow-2xl p-5 md:p-6 space-y-4 my-auto">
+            <div id="trim-wave" class="relative -mx-5 -mt-5 md:-mx-6 md:-mt-6 overflow-hidden rounded-t-3xl" style="position:relative;overflow:hidden;height:64px" aria-hidden="true"></div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-[10px] uppercase tracking-widest font-bold text-japandi-clay">Video Editor</span>
+                    <h4 class="text-lg font-serif font-bold text-japandi-dark mt-1">Trim &amp; Save</h4>
+                </div>
+                <button id="trim-close" class="p-1 rounded-full text-stone-400 hover:text-japandi-dark hover:bg-stone-100 transition-colors" aria-label="Close">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <!-- Loading state -->
+            <div id="trim-loading" class="py-10 text-center space-y-3">
+                <div class="text-sm text-japandi-stone" id="trim-loading-text">Fetching video...</div>
+                <div class="h-2 bg-japandi-bone rounded-full overflow-hidden max-w-xs mx-auto"><div id="trim-load-bar" class="h-full bg-japandi-clay transition-all" style="width:0%"></div></div>
+            </div>
+            <div id="trim-error" class="hidden p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700"></div>
+
+            <!-- Editor -->
+            <div id="trim-editor" class="hidden space-y-4">
+                <div class="bg-black rounded-2xl overflow-hidden">
+                    <video id="trim-video" playsinline class="w-full max-h-[320px] object-contain"></video>
+                </div>
+
+                <!-- Timeline -->
+                <div class="px-3 pt-2">
+                    <div id="trim-track" class="relative h-12 bg-japandi-bone rounded-xl select-none touch-none cursor-pointer">
+                        <div id="trim-range" class="absolute top-0 bottom-0 bg-japandi-clay/40 border-y-2 border-japandi-clay"></div>
+                        <div id="trim-playhead" class="absolute top-0 bottom-0 w-0.5 bg-japandi-dark pointer-events-none"></div>
+                        <div id="trim-h-start" class="absolute top-[-4px] bottom-[-4px] w-4 -ml-2 bg-japandi-dark rounded-md cursor-ew-resize touch-none flex items-center justify-center"><div class="w-0.5 h-5 bg-japandi-bg rounded"></div></div>
+                        <div id="trim-h-end" class="absolute top-[-4px] bottom-[-4px] w-4 -ml-2 bg-japandi-dark rounded-md cursor-ew-resize touch-none flex items-center justify-center"><div class="w-0.5 h-5 bg-japandi-bg rounded"></div></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="p-2.5 rounded-xl bg-white border border-japandi-bone"><div class="text-[10px] uppercase tracking-wider text-japandi-stone">Start</div><div id="trim-start-label" class="font-mono font-bold text-sm">0:00.0</div></div>
+                    <div class="p-2.5 rounded-xl bg-japandi-milk border border-japandi-bone"><div class="text-[10px] uppercase tracking-wider text-japandi-stone">Length</div><div id="trim-len-label" class="font-mono font-bold text-sm">0:00.0</div></div>
+                    <div class="p-2.5 rounded-xl bg-white border border-japandi-bone"><div class="text-[10px] uppercase tracking-wider text-japandi-stone">End</div><div id="trim-end-label" class="font-mono font-bold text-sm">0:00.0</div></div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button id="trim-set-start" class="py-2.5 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:bg-japandi-milk transition-all">Set start here</button>
+                    <button id="trim-set-end" class="py-2.5 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:bg-japandi-milk transition-all">Set end here</button>
+                    <button id="trim-preview" class="py-2.5 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:bg-japandi-milk transition-all">Preview clip</button>
+                    <button id="trim-reset" class="py-2.5 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:bg-japandi-milk transition-all">Reset</button>
+                </div>
+
+                <div id="trim-export-progress" class="hidden space-y-1">
+                    <div class="h-2 bg-japandi-bone rounded-full overflow-hidden"><div id="trim-export-bar" class="h-full bg-japandi-clay transition-all" style="width:0%"></div></div>
+                    <div class="text-[11px] text-japandi-stone text-center" id="trim-export-text">Recording clip...</div>
+                </div>
+
+                <button id="trim-save" class="w-full py-3.5 bg-japandi-dark hover:bg-[#3F3A36] text-japandi-bg font-bold rounded-xl transition-all flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    <span id="trim-save-text">Save trimmed clip</span>
+                </button>
+                <p class="text-[11px] text-japandi-stone text-center leading-relaxed">Always saved as .mp4. Recording runs while the clip plays, so it takes about as long as the clip itself. Keep this tab open.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Dynamic Toast Alerts -->
     <div id="toast-notif" class="fixed bottom-6 right-6 z-50 bg-japandi-dark text-japandi-bg px-5 py-3 rounded-xl shadow-lg border border-japandi-clay/20 flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 ease-out pointer-events-none">
         <svg class="w-5 h-5 text-[#C8B195]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,10 +363,17 @@
         // Set dynamic footer year
         document.getElementById('year').innerText = new Date().getFullYear();
 
-        // Proxies for CORS bypass & file downloads (Matches perfect download engine)
+        // Optional: your own proxy (most reliable). Example: 'https://your-worker.workers.dev/?url='
+        // See the Cloudflare Worker snippet provided with this file. Leave '' to use public proxies only.
+        const CUSTOM_PROXY = '';
+
+        // Proxies for CORS bypass & file downloads
         const CORS_PROXIES = [
+            ...(CUSTOM_PROXY ? [(url) => CUSTOM_PROXY + encodeURIComponent(url)] : []),
             (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+            (url) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            (url) => `https://thingproxy.freeboard.io/fetch/${url}`
         ];
 
         // State Store
@@ -283,7 +381,7 @@
             searchHistory: [],
             profileData: null,
             postData: null,
-            dataType: null, // 'profile' | 'post'
+            dataType: null, // 'profile' | 'post' | 'direct_media'
             downloadProgress: {} // tracks status of media urls
         };
 
@@ -323,7 +421,7 @@
             }, 3550);
         }
 
-        // Clipboard Copy Utility
+        // Clipboard Copy Utility (Safe for iframe permissions)
         function copyToClipboard(text) {
             const el = document.createElement('textarea');
             el.value = text;
@@ -341,43 +439,122 @@
             document.body.removeChild(el);
         }
 
-        // Perfect CORS-aware blob downloader logic
-        const fetchBlobWithProxy = async (url) => {
+        // ---- Download engine: streamed fetch with progress, validated, multi-route ----
+        async function streamToBlob(response, onProgress, signal) {
+            const total = parseInt(response.headers.get('content-length') || '0', 10);
+            if (!response.body || !response.body.getReader) {
+                return await response.blob();
+            }
+            const reader = response.body.getReader();
+            const chunks = [];
+            let received = 0;
+            while (true) {
+                if (signal && signal.aborted) throw new Error('aborted');
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                received += value.length;
+                if (onProgress) onProgress(received, total);
+            }
+            const type = response.headers.get('content-type') || '';
+            return new Blob(chunks, { type });
+        }
+
+        // Rejects HTML/JSON error pages and empty bodies that proxies sometimes return with status 200
+        async function validateMediaBlob(blob, mediaType) {
+            const strict = ['video', 'photo', 'gif'].includes(mediaType);
+            if (blob.size === 0) throw new Error('Empty response');
+            if (strict && blob.size < 512) throw new Error('Empty or tiny response');
+            const t = (blob.type || '').toLowerCase();
+            if (t.includes('text/html')) throw new Error('Proxy returned a page instead of media');
+            if (strict && (t.includes('application/json') || t.startsWith('text/'))) {
+                throw new Error('Proxy returned text instead of media');
+            }
+            const head = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
+            if (head[0] === 0x3C || head[0] === 0x7B) throw new Error('Response was a page/JSON, not media');
+            return blob;
+        }
+
+        const fetchBlobWithProxy = async (url, mediaType, onProgress, onRoute) => {
+            const attempts = [];
+            attempts.push({ name: 'direct', url });
+            if (mediaType === 'photo') {
+                attempts.push({
+                    name: 'google',
+                    url: `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${encodeURIComponent(url)}`
+                });
+            }
+            CORS_PROXIES.forEach((fn, i) => attempts.push({ name: 'proxy' + i, url: fn(url) }));
+
             let lastError;
-            for (const proxyFunc of CORS_PROXIES) {
+            for (let ai = 0; ai < attempts.length; ai++) {
+                const att = attempts[ai];
+                if (onRoute) onRoute(ai + 1, attempts.length);
+                const controller = new AbortController();
+                // 15s to get response headers; the body then streams without a hard cap
+                const headerTimer = setTimeout(() => controller.abort(), 15000);
                 try {
-                    const proxyUrl = proxyFunc(url);
-                    const response = await fetch(proxyUrl);
-                    if (!response.ok) throw new Error(`Proxy failed: ${response.status}`);
-                    return await response.blob();
+                    const response = await fetch(att.url, att.name === 'direct' ? { mode: 'cors', signal: controller.signal } : { signal: controller.signal });
+                    clearTimeout(headerTimer);
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const blob = await streamToBlob(response, onProgress, controller.signal);
+                    return await validateMediaBlob(blob, mediaType);
                 } catch (e) {
+                    clearTimeout(headerTimer);
                     lastError = e;
+                    console.warn('Download route failed:', att.name, e);
                 }
             }
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Direct fetch failed');
-                return await response.blob();
-            } catch (e) {
-                throw lastError || e;
-            }
+            throw lastError || new Error('All download routes failed');
         };
 
+        // Save a Blob to the user's device (real file download, no navigation)
+        function saveBlob(blob, filename) {
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            // Keep the URL alive long enough for large files / slow mobile browsers
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+        }
+
+        function guessExtension(url, mediaType) {
+            if (mediaType === 'video' || mediaType === 'gif') return 'mp4';
+            const fmt = (url.match(/[?&]format=([a-z0-9]+)/i) || [])[1];
+            if (fmt) return fmt.toLowerCase() === 'jpeg' ? 'jpg' : fmt.toLowerCase();
+            const ext = (url.split('?')[0].match(/\.(png|jpe?g|webp|gif)$/i) || [])[1];
+            if (ext) return ext.toLowerCase() === 'jpeg' ? 'jpg' : ext.toLowerCase();
+            return 'jpg';
+        }
+
         const fetchJsonWithProxy = async (url) => {
-            try {
-                const directResponse = await fetch(url);
-                if (directResponse.ok) {
-                    return await directResponse.json();
-                }
-            } catch (e) {}
+            const tryFetch = async (u) => {
+                const c = new AbortController();
+                const t = setTimeout(() => c.abort(), 12000);
+                try {
+                    const r = await fetch(u, { signal: c.signal });
+                    let json = null;
+                    try { json = await r.json(); } catch (e) {}
+                    return { ok: r.ok, status: r.status, json };
+                } finally { clearTimeout(t); }
+            };
 
             let lastError;
+            // Direct (FixTweet supports CORS). An API error body (e.g. "Tweet not found") is a real answer, not a network failure.
+            try {
+                const d = await tryFetch(url);
+                if (d.json && (d.ok || d.json.message || d.json.tweet || d.json.user)) return d.json;
+            } catch (e) { lastError = e; }
+
             for (const proxyFunc of CORS_PROXIES) {
                 try {
-                    const proxyUrl = proxyFunc(url);
-                    const response = await fetch(proxyUrl);
-                    if (!response.ok) throw new Error(`Proxy failed with status ${response.status}`);
-                    return await response.json();
+                    const d = await tryFetch(proxyFunc(url));
+                    if (d.json) return d.json;
+                    lastError = new Error(`Proxy failed with status ${d.status}`);
                 } catch (err) {
                     lastError = err;
                 }
@@ -385,12 +562,26 @@
             throw lastError || new Error("Connection failed. Please check network or try again.");
         };
 
-        // Input parser
+        // Input parser containing direct video/image matches
         const parseInput = (rawInput) => {
             const trimmed = rawInput.trim();
             if (!trimmed) return null;
 
-            const statusRegex = /(?:twitter|x)\.com\/[^/]+\/status\/(\d+)/i;
+            // 1. Check for direct Twitter media links (Images / Videos) or standard media files
+            const directMediaRegex = /(?:pbs\.twimg\.com|video\.twimg\.com|abs\.twimg\.com)\/[^\s]+|https?:\/\/[^\s]+?\.(?:mp4|mov|webm|m3u8|png|jpe?g|gif|webp)(?:\?[^\s]*)?/i;
+            const mediaMatch = trimmed.match(directMediaRegex);
+            if (mediaMatch) {
+                const isVideo = /\.(?:mp4|mov|webm|m3u8)/i.test(trimmed) || trimmed.includes('video.twimg.com');
+                return { 
+                    type: 'direct_media', 
+                    url: trimmed, 
+                    mediaType: isVideo ? 'video' : 'photo',
+                    display: isVideo ? 'Direct Video' : 'Direct Image' 
+                };
+            }
+
+            // 2. Check for Tweet Status Links
+            const statusRegex = /(?:twitter|x|fxtwitter|vxtwitter|fixupx|fixvx)\.com\/(?:[^\s?#]*?\/)?status(?:es)?\/(\d+)/i;
             const statusMatch = trimmed.match(statusRegex);
 
             if (statusMatch && statusMatch[1]) {
@@ -401,6 +592,7 @@
                 return { type: 'post', id: trimmed, display: `Post #${trimmed}` };
             }
 
+            // 3. User profiles
             let username = trimmed;
             if (trimmed.includes('twitter.com/') || trimmed.includes('x.com/')) {
                 const parts = trimmed.split('/');
@@ -479,55 +671,48 @@
             });
         }
 
-        // Universal Download handler (No popup media redirects, direct download dialog)
+        // Universal Download handler: always saves to device, never opens the link
         async function downloadMedia(mediaUrl, index, mediaType, btnElementId) {
             const btn = document.getElementById(btnElementId);
             if (!btn) return;
 
             const origContent = btn.innerHTML;
+            const origClass = btn.className;
             btn.disabled = true;
             btn.innerHTML = `<span class="animate-pulse">Connecting...</span>`;
 
-            const extension = mediaType === 'video' ? 'mp4' : mediaType === 'gif' ? 'mp4' : 'jpg';
+            const extension = guessExtension(mediaUrl, mediaType);
             const filename = `komorebi-x-media-${index}-${Date.now()}.${extension}`;
 
             try {
-                btn.innerHTML = `<span class="animate-pulse">Downloading...</span>`;
-                const blob = await fetchBlobWithProxy(mediaUrl);
-                const blobUrl = URL.createObjectURL(blob);
-                
-                const downloadLink = document.createElement('a');
-                downloadLink.href = blobUrl;
-                downloadLink.download = filename;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                
-                document.body.removeChild(downloadLink);
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 150);
+                const blob = await fetchBlobWithProxy(mediaUrl, mediaType, (got, total) => {
+                    const label = total ? Math.round(got / total * 100) + '%' : (got / 1048576).toFixed(1) + ' MB';
+                    btn.innerHTML = `<span>Downloading ${label}</span>`;
+                });
+                const typed = (mediaType === 'video' || mediaType === 'gif')
+                    ? new Blob([blob], { type: 'video/mp4' }) : blob;
+                saveBlob(typed, filename);
 
-                btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-clay text-japandi-bg transition-all flex items-center space-x-2 min-w-[120px] justify-center";
                 btn.innerHTML = `
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Done</span>
+                    <span>Saved</span>
                 `;
-                triggerToast("Downloaded successfully!");
-                
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center";
-                    btn.innerHTML = origContent;
-                }, 4000);
-
+                triggerToast("Saved to your device: " + filename);
             } catch (err) {
-                console.error("Direct blob save restricted, launching direct link stream:", err);
-                window.open(mediaUrl, '_blank');
-                
+                console.error("All download routes failed:", err);
+                btn.innerHTML = `<span>Failed. Tap to retry</span>`;
+                triggerToast("Download failed on every route. Try again, or set CUSTOM_PROXY in the file.");
                 btn.disabled = false;
-                btn.className = "px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center";
-                btn.innerHTML = origContent;
+                return;
             }
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.className = origClass;
+                btn.innerHTML = origContent;
+            }, 3000);
         }
 
         // Lightbox state handlers
@@ -683,9 +868,9 @@
                             </div>
                         </div>
 
-                        <!-- Spacer container: pt-14 on mobile ensures all content and stacked buttons are pushed safely below the absolute avatar -->
+                        <!-- Spacer container -->
                         <div class="pt-14 sm:pt-0">
-                            <!-- Clean vertical deck layout on mobile to prevent overflow/distortion, row on desktop -->
+                            <!-- Action elements row/deck -->
                             <div class="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 mb-6 w-full">
                                 <button id="copy-prof-id-btn" class="inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl border border-japandi-bone bg-japandi-bg text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:border-japandi-clay transition-all" title="Click to copy User ID">
                                     <span class="text-stone-400 font-normal">ID:</span>
@@ -723,14 +908,14 @@
                                 </div>
                             ` : ''}
 
-                            <!-- Account Location, Join Date & Account Age badges -->
+                            <!-- Location & Metadata -->
                             <div class="flex flex-wrap gap-3 mt-6 pt-1 text-xs text-japandi-stone">
                                 <div class="flex items-center space-x-1.5 bg-japandi-bg px-3.5 py-2 rounded-xl border border-japandi-bone/60 shadow-xs">
                                     <svg class="w-4 h-4 text-japandi-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <span class="font-semibold text-stone-400">The account is located in:</span>
+                                    <span class="font-semibold text-stone-400">Location:</span>
                                     <span class="text-japandi-dark font-medium">${user.location || "Not Specified"}</span>
                                 </div>
 
@@ -773,7 +958,7 @@
                 </div>
             `;
 
-            // Dynamic event triggers for profile clicking Zoom Lightbox
+            // Dynamic zoom events
             const bannerDiv = document.getElementById('prof-banner');
             if (bannerDiv && user.banner_url) {
                 bannerDiv.addEventListener('click', () => openLightbox(user.banner_url, `${user.name}'s Banner`));
@@ -790,6 +975,86 @@
 
             document.getElementById('copy-prof-id-btn').addEventListener('click', () => {
                 copyToClipboard(user.id);
+            });
+        }
+
+        // Template Renderer: Direct Custom Media Link Inspector
+        function renderDirectMedia(url, mediaType) {
+            let previewHtml = '';
+            
+            if (mediaType === 'video') {
+                previewHtml = `
+                    <div class="relative aspect-video bg-black flex flex-col items-center justify-center rounded-2xl overflow-hidden border border-japandi-bone">
+                        <video id="direct-video-player" controls playsinline class="w-full h-full max-h-[420px] object-contain">
+                            <source src="${url}" type="video/mp4" />
+                            Your browser does not support playing this video.
+                        </video>
+                        <div class="absolute bottom-2 left-2 right-2 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] text-white/90 flex justify-between items-center z-10">
+                            <span>Direct twimg video streaming active</span>
+                            <a href="${url}" target="_blank" class="underline hover:text-japandi-bone font-bold">Open Stream ↗</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                previewHtml = `
+                    <div onclick="openLightbox('${url}', 'Direct Image Asset')" class="relative group cursor-pointer overflow-hidden rounded-2xl bg-japandi-bg border border-japandi-bone flex items-center justify-center min-h-[250px] max-h-[500px]" title="Click to view full image">
+                        <img src="${url}" alt="Direct Preview" class="max-w-full max-h-[500px] object-contain group-hover:scale-[1.01] transition-transform duration-500" />
+                        <div class="absolute inset-0 bg-stone-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-xs font-semibold text-japandi-dark shadow-sm flex items-center space-x-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <span>Inspect and Expand</span>
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            profileContainer.innerHTML = '';
+            postContainer.innerHTML = `
+                <div class="bg-white rounded-3xl border border-japandi-bone shadow-sm overflow-hidden p-6 md:p-8">
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-japandi-milk flex items-center justify-center border border-japandi-bone text-japandi-clay">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-japandi-dark text-sm">Direct Media Inspector</h4>
+                                <span class="text-xs text-stone-400">Analyzing specified raw asset URL</span>
+                            </div>
+                        </div>
+                        <button id="direct-copy-btn" class="p-2.5 rounded-xl border border-japandi-bone bg-japandi-bg text-japandi-stone hover:text-japandi-dark hover:bg-japandi-milk transition-all" title="Copy Raw URL">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        ${previewHtml}
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-japandi-bg flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="text-xs text-japandi-stone truncate max-w-full font-mono bg-japandi-bg p-3.5 rounded-xl border border-japandi-bone/60 w-full sm:w-auto flex-1">${url}</div>
+                        ${mediaType === 'video' ? `<button id="direct-trim-btn" class="w-full sm:w-auto px-6 py-3 border border-japandi-clay bg-japandi-milk text-japandi-dark font-bold rounded-xl hover:bg-japandi-bone transition-all">Trim &amp; Save</button>` : ''}
+                        <button id="direct-download-btn" class="w-full sm:w-auto px-6 py-3 bg-japandi-dark hover:bg-[#3F3A36] text-japandi-bg font-bold rounded-xl transition-all flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            <span>Download Resource</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('direct-copy-btn').addEventListener('click', () => copyToClipboard(url));
+            const directTrimBtn = document.getElementById('direct-trim-btn');
+            if (directTrimBtn) directTrimBtn.addEventListener('click', () => openTrimmer(url, mediaType));
+            document.getElementById('direct-download-btn').addEventListener('click', () => {
+                downloadMedia(url, 'direct', mediaType, 'direct-download-btn');
             });
         }
 
@@ -829,7 +1094,7 @@
                     } else if (item.type === 'video' || item.type === 'gif') {
                         mediaGridHtml += `
                             <div class="relative aspect-video bg-black flex items-center justify-center col-span-2">
-                                <video controls playsinline class="w-full h-full max-h-[420px] object-contain" poster="${item.thumbnail_url || ''}">
+                                <video id="video-asset-${idx}" controls playsinline class="w-full h-full max-h-[420px] object-contain" poster="${item.thumbnail_url || ''}">
                                     <source src="${item.url}" type="video/mp4" />
                                     Your browser does not support playing this video.
                                 </video>
@@ -837,7 +1102,7 @@
                         `;
                     }
 
-                    // Build download list cards
+                    // Build download cards
                     const btnId = `dl-btn-${idx}`;
                     downloadableResourcesHtml += `
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-japandi-bg border border-japandi-bone rounded-2xl gap-4 hover:border-japandi-clay transition-all">
@@ -850,16 +1115,20 @@
                                         <span class="bg-japandi-clay/15 text-japandi-clay font-extrabold text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">${item.type}</span>
                                         <span class="text-xs text-stone-400">Resource #${idx + 1}</span>
                                     </div>
-                                    <p class="text-xs text-japandi-stone font-mono truncate max-w-[200px] sm:max-w-xs mt-1">
+                                    <p class="text-xs text-japandi-stone font-mono truncate max-w-[180px] sm:max-w-xs mt-1">
                                         ${item.url.split('/').pop().split('?')[0] || 'media_asset'}
                                     </p>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                                <button onclick="copyToClipboard('${item.url}')" class="px-3.5 py-2.5 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:bg-japandi-milk transition-all">
+                            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                                <button onclick="copyToClipboard('${item.url}')" class="px-3 py-2 rounded-xl border border-japandi-bone bg-white text-xs font-bold text-japandi-stone hover:text-japandi-dark hover:bg-japandi-milk transition-all">
                                     Copy Link
                                 </button>
-                                <button id="${btnId}" onclick="downloadMedia('${item.url}', ${idx}, '${item.type}', '${btnId}')" class="px-4 py-2.5 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center">
+                                <a href="https://d.fxtwitter.com/status/${tweet.id}" target="_blank" class="px-3 py-2 rounded-xl border border-dashed border-japandi-clay text-xs font-bold text-japandi-clay hover:bg-japandi-milk transition-all" title="Downloads via FixTweet server-side attachment headers">
+                                    Backup Download
+                                </a>
+                                ${(item.type === 'video' || item.type === 'gif') ? `<button onclick="openTrimmer('${item.url}', '${item.type}')" class="px-3 py-2 rounded-xl border border-japandi-clay bg-japandi-milk text-xs font-bold text-japandi-dark hover:bg-japandi-bone transition-all">Trim &amp; Save</button>` : ''}
+                                <button id="${btnId}" onclick="downloadMedia('${item.url}', ${idx}, '${item.type}', '${btnId}')" class="px-4 py-2 rounded-xl font-bold text-xs bg-japandi-dark text-japandi-bg hover:bg-[#3F3A36] transition-all flex items-center space-x-2 min-w-[120px] justify-center">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
@@ -975,7 +1244,7 @@
             const parsed = parseInput(queryToUse);
 
             if (!parsed) {
-                setError("Please enter a valid @username, X Profile link, or Tweet Status URL.");
+                setError("Please enter a valid @username, X Profile, status URL, or direct media link.");
                 return;
             }
 
@@ -985,7 +1254,11 @@
             postContainer.innerHTML = '';
 
             try {
-                if (parsed.type === 'post') {
+                if (parsed.type === 'direct_media') {
+                    state.dataType = 'direct_media';
+                    renderDirectMedia(parsed.url, parsed.mediaType);
+                    saveToHistory({ query: queryToUse, type: 'media', label: parsed.display, timestamp: Date.now() });
+                } else if (parsed.type === 'post') {
                     const url = `https://api.fxtwitter.com/status/${parsed.id}`;
                     const data = await fetchJsonWithProxy(url);
                     
@@ -1068,11 +1341,820 @@
         // Lightbox modal close listeners
         closeLightboxBtn.addEventListener('click', closeLightbox);
         lightbox.addEventListener('click', (e) => {
-            // Only close if we clicked the backdrop, not the modal content itself
             if (e.target === lightbox) {
                 closeLightbox();
             }
         });
+
+
+        // ==========================================
+        // Trim & Save editor
+        // ==========================================
+        const trimEl = {
+            modal: document.getElementById('trim-modal'),
+            loading: document.getElementById('trim-loading'),
+            loadingText: document.getElementById('trim-loading-text'),
+            loadBar: document.getElementById('trim-load-bar'),
+            error: document.getElementById('trim-error'),
+            editor: document.getElementById('trim-editor'),
+            video: document.getElementById('trim-video'),
+            track: document.getElementById('trim-track'),
+            range: document.getElementById('trim-range'),
+            playhead: document.getElementById('trim-playhead'),
+            hStart: document.getElementById('trim-h-start'),
+            hEnd: document.getElementById('trim-h-end'),
+            startLabel: document.getElementById('trim-start-label'),
+            endLabel: document.getElementById('trim-end-label'),
+            lenLabel: document.getElementById('trim-len-label'),
+            exportWrap: document.getElementById('trim-export-progress'),
+            exportBar: document.getElementById('trim-export-bar'),
+            exportText: document.getElementById('trim-export-text'),
+            saveBtn: document.getElementById('trim-save'),
+            saveText: document.getElementById('trim-save-text')
+        };
+        const trim = { usedPreview: false, cancelled: false, ext: 'mp4', blob: null, blobUrl: null, duration: 0, start: 0, end: 0, previewing: false, exporting: false, recorder: null, token: 0 };
+
+        const fmtTime = (t) => {
+            t = Math.max(0, t || 0);
+            const m = Math.floor(t / 60);
+            const sec = (t % 60).toFixed(1).padStart(4, '0');
+            return `${m}:${sec}`;
+        };
+
+        function trimRender() {
+            if (!trim.duration) return;
+            const sPct = trim.start / trim.duration * 100;
+            const ePct = trim.end / trim.duration * 100;
+            trimEl.hStart.style.left = sPct + '%';
+            trimEl.hEnd.style.left = ePct + '%';
+            trimEl.range.style.left = sPct + '%';
+            trimEl.range.style.width = (ePct - sPct) + '%';
+            trimEl.startLabel.innerText = fmtTime(trim.start);
+            trimEl.endLabel.innerText = fmtTime(trim.end);
+            trimEl.lenLabel.innerText = fmtTime(trim.end - trim.start);
+        }
+
+        function trimRenderPlayhead() {
+            if (!trim.duration) return;
+            trimEl.playhead.style.left = (trimEl.video.currentTime / trim.duration * 100) + '%';
+        }
+
+        function trimShow(which, msg) {
+            trimEl.loading.classList.toggle('hidden', which !== 'loading');
+            trimEl.editor.classList.toggle('hidden', which !== 'editor');
+            trimEl.error.classList.toggle('hidden', which !== 'error');
+            if (which === 'error') trimEl.error.innerText = msg || 'Something went wrong.';
+        }
+
+        // ---- container sniffing (don't trust the URL or the proxy's content-type) ----
+        async function sniffContainer(blob) {
+            const h = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
+            const ascii = (from, to) => String.fromCharCode(...h.slice(from, to));
+            if (h[0] === 0x3C || h[0] === 0x7B) return 'bad';
+            if (ascii(4, 8) === 'ftyp' || ['styp', 'moof', 'moov', 'mdat', 'free', 'sidx'].includes(ascii(4, 8))) return 'mp4';
+            if (h[0] === 0x1A && h[1] === 0x45 && h[2] === 0xDF && h[3] === 0xA3) return 'webm';
+            if (h[0] === 0x47) return 'ts';
+            return 'unknown';
+        }
+
+        // ---- HLS (.m3u8) -> single blob (picks best variant, supports fMP4 + TS segments) ----
+        async function fetchHlsAsBlob(url, onProgress) {
+            const pl = await fetchBlobWithProxy(url, 'playlist');
+            const text = await pl.text();
+            if (!text.includes('#EXTM3U')) throw new Error('Not a valid HLS playlist');
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+            if (lines.some(l => l.startsWith('#EXT-X-STREAM-INF'))) {
+                let best = null, bestBw = -1;
+                lines.forEach((l, i) => {
+                    if (!l.startsWith('#EXT-X-STREAM-INF')) return;
+                    const bw = parseInt((l.match(/BANDWIDTH=(\d+)/) || [])[1] || '0', 10);
+                    const next = lines[i + 1];
+                    if (next && !next.startsWith('#') && bw > bestBw) { best = next; bestBw = bw; }
+                });
+                if (!best) throw new Error('No playable variant in HLS playlist');
+                return fetchHlsAsBlob(new URL(best, url).href, onProgress);
+            }
+
+            if (lines.some(l => l.startsWith('#EXT-X-KEY') && !/METHOD=NONE/.test(l))) {
+                throw new Error('This stream is encrypted and cannot be downloaded.');
+            }
+            const mapLine = lines.find(l => l.startsWith('#EXT-X-MAP:'));
+            const mapUri = mapLine && (mapLine.match(/URI="([^"]+)"/) || [])[1];
+            const segs = lines.filter(l => !l.startsWith('#')).map(l => new URL(l, url).href);
+            if (!segs.length) throw new Error('HLS playlist has no segments');
+
+            const parts = new Array(segs.length);
+            let next = 0, done = 0;
+            const worker = async () => {
+                while (true) {
+                    const i = next++;
+                    if (i >= segs.length) return;
+                    parts[i] = await fetchBlobWithProxy(segs[i], 'segment');
+                    done++;
+                    onProgress(done, segs.length);
+                }
+            };
+            await Promise.all([worker(), worker(), worker(), worker()]);
+            const all = mapUri ? [await fetchBlobWithProxy(new URL(mapUri, url).href, 'segment'), ...parts] : parts;
+            return new Blob(all, { type: mapUri ? 'video/mp4' : 'video/mp2t' });
+        }
+
+        // Resolves true only if the browser can actually decode video from this URL
+        function tryPlay(url) {
+            return new Promise((resolve) => {
+                const v = trimEl.video;
+                let finished = false;
+                const fin = (ok) => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timer);
+                    v.removeEventListener('loadeddata', onLoaded);
+                    v.removeEventListener('error', onErr);
+                    resolve(ok);
+                };
+                const onLoaded = () => fin(v.videoWidth > 0 && isFinite(v.duration) && v.duration > 0);
+                const onErr = () => fin(false);
+                const timer = setTimeout(() => fin(false), 15000);
+                v.addEventListener('loadeddata', onLoaded);
+                v.addEventListener('error', onErr);
+                v.src = url;
+                v.load();
+            });
+        }
+
+        // Fallback: convert anything ffmpeg understands into a small H.264 MP4 the browser can play
+        async function buildPreview(blob, ext, onPct) {
+            const ff = await loadFFmpeg();
+            const name = 'src.' + ext;
+            await ff.writeFile(name, new Uint8Array(await blob.arrayBuffer()));
+            ffmpegProgressCb = (pr) => onPct(Math.min(99, Math.max(0, Math.round(pr * 100))));
+            try {
+                const code = await ff.exec([
+                    '-i', name,
+                    '-vf', "scale=-2:'min(480,ih)'",
+                    '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28',
+                    '-pix_fmt', 'yuv420p',
+                    '-c:a', 'aac', '-b:a', '96k',
+                    '-movflags', '+faststart',
+                    'preview.mp4'
+                ]);
+                if (code !== 0) throw new Error('Could not convert this video (encoder code ' + code + '). ' + ff.lastLog());
+                const out = await ff.readFile('preview.mp4');
+                return new Blob([out], { type: 'video/mp4' });
+            } finally {
+                ffmpegProgressCb = null;
+                try { await ff.deleteFile(name); await ff.deleteFile('preview.mp4'); } catch (e) {}
+            }
+        }
+
+        async function openTrimmer(url, mediaType) {
+            closeTrimmer(true);
+            const token = ++trim.token;
+            trimEl.modal.classList.remove('hidden');
+            trimEl.modal.classList.add('flex');
+            trimShow('loading');
+            const setStatus = (txt, pct) => {
+                if (token !== trim.token) return;
+                trimEl.loadingText.innerText = txt;
+                if (pct != null) trimEl.loadBar.style.width = pct + '%';
+            };
+            setStatus('Fetching video...', 0);
+
+            try {
+                let blob;
+                if (/\.m3u8(\?|$)/i.test(url)) {
+                    setStatus('Reading stream playlist...', 3);
+                    blob = await fetchHlsAsBlob(url, (d, t) => setStatus(`Downloading stream... ${d}/${t}`, Math.round(d / t * 100)));
+                } else {
+                    let routeLabel = '';
+                    blob = await fetchBlobWithProxy(url, 'video', (got, total) => {
+                        if (total) setStatus(`Fetching video... ${Math.round(got / total * 100)}%${routeLabel}`, Math.round(got / total * 100));
+                        else setStatus(`Fetching video... ${(got / 1048576).toFixed(1)} MB${routeLabel}`, 60);
+                    }, (i, n) => {
+                        routeLabel = i > 1 ? ` (route ${i}/${n})` : '';
+                        setStatus(`Fetching video...${routeLabel}`);
+                    });
+                }
+                if (token !== trim.token) return;
+
+                const kind = await sniffContainer(blob);
+                if (kind === 'bad') throw new Error('The link did not return a video file.');
+                trim.blob = blob;
+                trim.ext = { mp4: 'mp4', webm: 'webm', ts: 'ts' }[kind] || 'mp4';
+
+                // 1) try native playback (fast path)
+                let playable = false;
+                if (kind !== 'ts') {
+                    setStatus('Preparing editor...', 100);
+                    const mime = { mp4: 'video/mp4', webm: 'video/webm' }[kind] || 'video/mp4';
+                    const nativeUrl = URL.createObjectURL(new Blob([blob], { type: mime }));
+                    playable = await tryPlay(nativeUrl);
+                    if (token !== trim.token) { URL.revokeObjectURL(nativeUrl); return; }
+                    if (playable) trim.blobUrl = nativeUrl; else URL.revokeObjectURL(nativeUrl);
+                }
+
+                // 2) browser can't decode it -> convert a preview with ffmpeg
+                if (!playable) {
+                    setStatus('Browser cannot play this format. Converting for preview (first time loads the engine)...', 0);
+                    const preview = await buildPreview(blob, trim.ext, (pct) => setStatus(`Converting for preview... ${pct}%`, pct));
+                    if (token !== trim.token) return;
+                    const previewUrl = URL.createObjectURL(preview);
+                    playable = await tryPlay(previewUrl);
+                    if (token !== trim.token) { URL.revokeObjectURL(previewUrl); return; }
+                    if (!playable) { URL.revokeObjectURL(previewUrl); throw new Error('This video could not be decoded, even after conversion.'); }
+                    trim.blobUrl = previewUrl;
+                    trim.usedPreview = true;
+                }
+
+                trim.duration = trimEl.video.duration;
+                trim.start = 0;
+                trim.end = trim.duration;
+                trimShow('editor');
+                trimRender();
+                trimRenderPlayhead();
+            } catch (err) {
+                if (token !== trim.token) return;
+                console.error(err);
+                trimShow('error', 'Could not open this video: ' + (err.message || 'unknown error') +
+                    ' If it keeps failing, set CUSTOM_PROXY in the file.');
+            }
+        }
+
+        function closeTrimmer(silent) {
+            trim.token++;
+            if (trim.exporting) stopExport();
+            trim.previewing = false;
+            trimEl.video.pause();
+            trimEl.video.removeAttribute('src');
+            trimEl.video.load();
+            if (trim.blobUrl) { URL.revokeObjectURL(trim.blobUrl); trim.blobUrl = null; }
+            trim.duration = 0;
+            trim.blob = null;
+            trim.usedPreview = false;
+            trimEl.exportWrap.classList.add('hidden');
+            trimEl.modal.classList.add('hidden');
+            trimEl.modal.classList.remove('flex');
+        }
+
+        // ---- timeline interaction (mouse + touch via pointer events) ----
+        function trimTimeFromEvent(e) {
+            const r = trimEl.track.getBoundingClientRect();
+            const pct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+            return pct * trim.duration;
+        }
+        function bindHandle(handleEl, which) {
+            handleEl.addEventListener('pointerdown', (e) => {
+                if (trim.exporting || !trim.duration) return;
+                e.preventDefault();
+                e.stopPropagation();
+                try { handleEl.setPointerCapture(e.pointerId); } catch (err) {}
+                const move = (ev) => {
+                    const t = trimTimeFromEvent(ev);
+                    const minLen = Math.min(0.2, trim.duration);
+                    if (which === 'start') trim.start = Math.min(t, trim.end - minLen);
+                    else trim.end = Math.max(t, trim.start + minLen);
+                    trim.start = Math.max(0, trim.start);
+                    trim.end = Math.min(trim.duration, trim.end);
+                    trimEl.video.currentTime = which === 'start' ? trim.start : trim.end;
+                    trimRender();
+                    trimRenderPlayhead();
+                };
+                const up = () => {
+                    window.removeEventListener('pointermove', move);
+                    window.removeEventListener('pointerup', up);
+                    window.removeEventListener('pointercancel', up);
+                };
+                window.addEventListener('pointermove', move);
+                window.addEventListener('pointerup', up);
+                window.addEventListener('pointercancel', up);
+            });
+        }
+        bindHandle(trimEl.hStart, 'start');
+        bindHandle(trimEl.hEnd, 'end');
+
+        trimEl.track.addEventListener('pointerdown', (e) => {
+            if (trim.exporting || !trim.duration) return;
+            trimEl.video.currentTime = trimTimeFromEvent(e);
+            trimRenderPlayhead();
+        });
+
+        trimEl.video.addEventListener('timeupdate', () => {
+            trimRenderPlayhead();
+            if (trim.previewing && !trim.exporting && trimEl.video.currentTime >= trim.end) {
+                trimEl.video.pause();
+                trim.previewing = false;
+            }
+        });
+        trimEl.video.addEventListener('click', () => {
+            if (trim.exporting) return;
+            trimEl.video.paused ? trimEl.video.play() : trimEl.video.pause();
+        });
+
+        document.getElementById('trim-set-start').addEventListener('click', () => {
+            if (trim.exporting) return;
+            const t = trimEl.video.currentTime;
+            trim.start = Math.min(t, trim.end - 0.2);
+            trim.start = Math.max(0, trim.start);
+            trimRender();
+        });
+        document.getElementById('trim-set-end').addEventListener('click', () => {
+            if (trim.exporting) return;
+            const t = trimEl.video.currentTime;
+            trim.end = Math.max(t, trim.start + 0.2);
+            trim.end = Math.min(trim.duration, trim.end);
+            trimRender();
+        });
+        document.getElementById('trim-reset').addEventListener('click', () => {
+            if (trim.exporting) return;
+            trim.start = 0; trim.end = trim.duration;
+            trimEl.video.currentTime = 0;
+            trimRender(); trimRenderPlayhead();
+        });
+        document.getElementById('trim-preview').addEventListener('click', () => {
+            if (trim.exporting) return;
+            trimEl.video.currentTime = trim.start;
+            trim.previewing = true;
+            trimEl.video.play();
+        });
+        document.getElementById('trim-close').addEventListener('click', () => closeTrimmer());
+        trimEl.modal.addEventListener('click', (e) => { if (e.target === trimEl.modal) closeTrimmer(); });
+
+        // ---- export: real .mp4 (H.264 + AAC) via ffmpeg.wasm ----
+        const FF_BASE = 'https://cdn.jsdelivr.net/npm';
+        const FF_URLS = {
+            core: `${FF_BASE}/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js`,
+            wasm: `${FF_BASE}/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm`
+        };
+        let ffmpegInstance = null;
+        let ffmpegLoading = null;
+        let ffmpegProgressCb = null;
+
+        // Runs inside our own Web Worker (stringified below). Talks to the raw ffmpeg core with plain messages only.
+        function ffWorkerMain() {
+            let core = null;
+            self.onmessage = async (e) => {
+                const { id, type, data } = e.data;
+                try {
+                    let result = true;
+                    let transfer = [];
+                    if (type === 'load') {
+                        importScripts(data.coreURL);
+                        if (typeof self.createFFmpegCore !== 'function') throw new Error('Encoder core did not initialise');
+                        core = await self.createFFmpegCore({
+                            mainScriptUrlOrBlob: data.coreURL + '#' + btoa(JSON.stringify({ wasmURL: data.wasmURL, workerURL: '' })),
+                            locateFile: (path) => path.endsWith('.wasm') ? data.wasmURL : path
+                        });
+                        core.setLogger((d) => self.postMessage({ type: 'log', msg: (d && d.message) ? d.message : String(d) }));
+                        core.setProgress((d) => self.postMessage({ type: 'progress', progress: (d && typeof d.progress === 'number') ? d.progress : 0 }));
+                    } else if (type === 'write') {
+                        core.FS.writeFile(data.path, data.data);
+                    } else if (type === 'exec') {
+                        if (core.setTimeout) core.setTimeout(-1);
+                        core.exec(...data.args);
+                        result = core.ret;
+                        core.reset();
+                    } else if (type === 'read') {
+                        result = new Uint8Array(core.FS.readFile(data.path));
+                        transfer = [result.buffer];
+                    } else if (type === 'delete') {
+                        core.FS.unlink(data.path);
+                    }
+                    self.postMessage({ id, result }, transfer);
+                } catch (err) {
+                    self.postMessage({ id, error: (err && err.message) ? err.message : String(err) });
+                }
+            };
+        }
+
+        function createFFmpegWorker() {
+            const src = `(${ffWorkerMain.toString()})()`;
+            const worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+            let nextId = 1;
+            const pending = {};
+            const logs = [];
+            const rejectAll = (msg) => { Object.keys(pending).forEach(k => { pending[k].reject(new Error(msg)); delete pending[k]; }); };
+
+            const api = {
+                onprogress: null,
+                lastLog: () => logs.slice(-6).join('\n'),
+                terminate: () => { worker.terminate(); rejectAll('Cancelled'); },
+                load: () => call('load', { coreURL: FF_URLS.core, wasmURL: FF_URLS.wasm }),
+                writeFile: (path, u8) => call('write', { path, data: u8 }, [u8.buffer]),
+                exec: (args) => call('exec', { args }),
+                readFile: (path) => call('read', { path }),
+                deleteFile: (path) => call('delete', { path })
+            };
+
+            function call(type, data, transfer) {
+                return new Promise((resolve, reject) => {
+                    const id = nextId++;
+                    pending[id] = { resolve, reject };
+                    worker.postMessage({ id, type, data }, transfer || []);
+                });
+            }
+
+            worker.onmessage = (e) => {
+                const m = e.data;
+                if (m.type === 'log') { logs.push(m.msg); if (logs.length > 60) logs.shift(); return; }
+                if (m.type === 'progress') { if (api.onprogress) api.onprogress(m.progress); return; }
+                const pr = pending[m.id];
+                if (!pr) return;
+                delete pending[m.id];
+                if (m.error) pr.reject(new Error(m.error)); else pr.resolve(m.result);
+            };
+            worker.onerror = (e) => {
+                rejectAll('Encoder worker failed: ' + (e && e.message ? e.message : 'could not load the encoder (check your connection)'));
+            };
+            return api;
+        }
+
+        function loadFFmpeg() {
+            if (ffmpegInstance) return Promise.resolve(ffmpegInstance);
+            if (ffmpegLoading) return ffmpegLoading;
+            ffmpegLoading = (async () => {
+                const ff = createFFmpegWorker();
+                ff.onprogress = (pr) => { if (ffmpegProgressCb) ffmpegProgressCb(pr); };
+                const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Encoder took too long to load (check your connection)')), 120000));
+                try {
+                    await Promise.race([ff.load(), timeout]);
+                } catch (err) {
+                    ff.terminate();
+                    throw err;
+                }
+                ffmpegInstance = ff;
+                return ff;
+            })();
+            ffmpegLoading.catch(() => { ffmpegLoading = null; });
+            return ffmpegLoading;
+        }
+
+        function stopExport() {
+            trim.cancelled = true;
+            try { if (trim.recorder && trim.recorder.state !== 'inactive') trim.recorder.stop(); } catch (e) {}
+            try { trimEl.video.pause(); } catch (e) {}
+            if (ffmpegInstance) {
+                try { ffmpegInstance.terminate(); } catch (e) {}
+                ffmpegInstance = null;
+                ffmpegLoading = null;
+            }
+        }
+
+        // Only MP4 containers are accepted. Returns '' when the browser cannot record MP4 directly.
+        function pickMp4RecorderMime() {
+            if (!window.MediaRecorder) return '';
+            const candidates = [
+                'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+                'video/mp4;codecs=avc1.4D401E,mp4a.40.2',
+                'video/mp4;codecs=avc1,mp4a.40.2',
+                'video/mp4;codecs=avc1',
+                'video/mp4'
+            ];
+            for (const c of candidates) {
+                if (MediaRecorder.isTypeSupported(c)) return c;
+            }
+            return '';
+        }
+
+        function seekTo(video, t) {
+            return new Promise((resolve) => {
+                if (Math.abs(video.currentTime - t) < 0.01) return resolve();
+                const done = () => { video.removeEventListener('seeked', done); resolve(); };
+                video.addEventListener('seeked', done);
+                video.currentTime = t;
+            });
+        }
+
+        // Path A (default): record the selected range straight into an MP4 file. No workers, no downloads.
+        async function exportViaRecorder(mime) {
+            const video = trimEl.video;
+            const capture = video.captureStream || video.mozCaptureStream;
+            const start = trim.start, end = trim.end, clipLen = end - start;
+
+            video.pause();
+            await seekTo(video, start);
+
+            const stream = capture.call(video);
+            const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
+            trim.recorder = recorder;
+            const chunks = [];
+            recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+            const finished = new Promise((resolve) => { recorder.onstop = resolve; });
+
+            recorder.start(250);
+            await video.play();
+
+            await new Promise((resolve) => {
+                const timer = setInterval(() => {
+                    if (trim.cancelled) { clearInterval(timer); return resolve(); }
+                    const cur = video.currentTime;
+                    const pct = Math.min(100, Math.max(0, (cur - start) / clipLen * 100));
+                    trimEl.exportBar.style.width = pct + '%';
+                    trimEl.exportText.innerText = `Recording MP4... ${Math.round(pct)}%`;
+                    if (cur >= end - 0.03 || video.ended) { clearInterval(timer); resolve(); }
+                }, 100);
+            });
+
+            video.pause();
+            if (recorder.state !== 'inactive') recorder.stop();
+            await finished;
+            stream.getTracks().forEach(t => t.stop());
+            trim.recorder = null;
+            if (trim.cancelled) return null;
+
+            const out = new Blob(chunks, { type: 'video/mp4' });
+            if (out.size < 1024) throw new Error('Recorded clip was empty');
+            return out;
+        }
+
+        // Path B (fallback): cut the original file with ffmpeg and encode H.264/AAC MP4
+        async function exportViaFFmpeg() {
+            const start = trim.start, end = trim.end, clipLen = end - start;
+            trimEl.exportText.innerText = ffmpegInstance ? 'Preparing...' : 'Loading video engine (first time only, ~30 MB)...';
+            const ff = await loadFFmpeg();
+            const inName = 'in.' + (trim.ext || 'mp4');
+            try {
+                await ff.writeFile(inName, new Uint8Array(await trim.blob.arrayBuffer()));
+                ffmpegProgressCb = (pr) => {
+                    const pct = Math.min(100, Math.max(0, Math.round(pr * 100)));
+                    trimEl.exportBar.style.width = pct + '%';
+                    trimEl.exportText.innerText = `Encoding MP4... ${pct}%`;
+                };
+                trimEl.exportText.innerText = 'Encoding MP4... 0%';
+                const code = await ff.exec([
+                    '-ss', String(start), '-i', inName, '-t', String(clipLen),
+                    '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
+                    '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+                    '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k',
+                    '-movflags', '+faststart', 'out.mp4'
+                ]);
+                if (code !== 0) throw new Error('Encoder exited with code ' + code + '. ' + ff.lastLog());
+                const out = await ff.readFile('out.mp4');
+                if (!out || out.length < 1024) throw new Error('Encoded clip was empty');
+                return new Blob([out], { type: 'video/mp4' });
+            } finally {
+                ffmpegProgressCb = null;
+                try { await ff.deleteFile(inName); await ff.deleteFile('out.mp4'); } catch (e) {}
+            }
+        }
+
+        async function exportTrimmedClip() {
+            if (trim.exporting || !trim.duration || !trim.blob) return;
+            const start = trim.start, end = trim.end;
+
+            trim.exporting = true;
+            trim.cancelled = false;
+            trim.previewing = false;
+            trimEl.video.pause();
+            trimEl.saveBtn.disabled = true;
+            trimEl.saveText.innerText = 'Working...';
+            trimEl.exportWrap.classList.remove('hidden');
+            trimEl.exportBar.style.width = '0%';
+            trimEl.exportText.innerText = 'Starting...';
+
+            try {
+                const canCapture = !!(trimEl.video.captureStream || trimEl.video.mozCaptureStream);
+                const mime = (!trim.usedPreview && canCapture) ? pickMp4RecorderMime() : '';
+                const out = mime ? await exportViaRecorder(mime) : await exportViaFFmpeg();
+
+                if (out && !trim.cancelled) {
+                    const tag = (t) => fmtTime(t).replace(/[:.]/g, '-');
+                    saveBlob(out, `komorebi-x-clip-${tag(start)}_${tag(end)}.mp4`);
+                    trimEl.exportBar.style.width = '100%';
+                    trimEl.exportText.innerText = 'Done';
+                    triggerToast('Trimmed MP4 saved to your device');
+                }
+            } catch (err) {
+                console.error(err);
+                triggerToast('Export failed: ' + (err.message || 'unknown error'));
+                trimEl.exportText.innerText = 'Export failed: ' + (err.message || 'unknown error');
+            } finally {
+                trim.exporting = false;
+                trim.recorder = null;
+                trimEl.saveBtn.disabled = false;
+                trimEl.saveText.innerText = 'Save trimmed clip';
+                setTimeout(() => trimEl.exportWrap.classList.add('hidden'), 3000);
+            }
+        }
+        trimEl.saveBtn.addEventListener('click', exportTrimmedClip);
+
+
+        // If the inline preview cannot load the remote URL, retry through the download engine and play from a local blob
+        postContainer.addEventListener('error', async (e) => {
+            const el = e.target;
+            if (!el || !el.tagName) return;
+            const video = el.tagName === 'SOURCE' ? el.parentElement : (el.tagName === 'VIDEO' ? el : null);
+            if (!video || video.tagName !== 'VIDEO' || video.dataset.blobTried) return;
+            const src = el.tagName === 'SOURCE' ? el.src : (video.currentSrc || video.src);
+            if (!src || src.startsWith('blob:')) return;
+            video.dataset.blobTried = '1';
+            triggerToast('Preview blocked. Loading video through fallback route...');
+            try {
+                const blob = await fetchBlobWithProxy(src, 'video');
+                video.src = URL.createObjectURL(new Blob([blob], { type: 'video/mp4' }));
+                video.load();
+            } catch (err) {
+                triggerToast('Could not load the video preview. Download and Trim may still work.');
+            }
+        }, true);
+
+
+        // ==========================================
+        // Animated waves (site palette, reacts to pointer + scroll)
+        // ==========================================
+        const waveInstances = [];
+        let waveBoost = 0, waveLastX = null;
+
+        function initWaves(host, H) {
+            if (!host) return;
+            const W = 1440;
+            const uid = 'wv' + Math.random().toString(36).slice(2, 7);
+            host.innerHTML = `
+                <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+                    <defs>
+                        <linearGradient id="${uid}a" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#E7E2D8"/><stop offset="1" stop-color="#F4EFE6"/></linearGradient>
+                        <linearGradient id="${uid}b" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#8C7A6B" stop-opacity=".55"/><stop offset="1" stop-color="#E7E2D8" stop-opacity=".85"/></linearGradient>
+                        <linearGradient id="${uid}c" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#8C7A6B"/><stop offset="1" stop-color="#605C58"/></linearGradient>
+                    </defs>
+                    <path fill="url(#${uid}a)"/><path fill="url(#${uid}b)"/><path fill="url(#${uid}c)"/>
+                </svg>`;
+            const paths = host.querySelectorAll('path');
+            const layers = [
+                { el: paths[0], base: 0.80, amp: 0.10, amp2: 0.045, k: 2.0, k2: 4.7, s: 0.55, s2: -0.85, ph: 0.0 },
+                { el: paths[1], base: 0.64, amp: 0.09, amp2: 0.040, k: 2.7, k2: 6.1, s: -0.75, s2: 1.15, ph: 1.7 },
+                { el: paths[2], base: 0.44, amp: 0.08, amp2: 0.035, k: 3.4, k2: 7.3, s: 0.95, s2: -1.40, ph: 3.1 }
+            ];
+            waveInstances.push({ host, W, H, layers });
+        }
+
+        function drawWaves(t) {
+            const N = 72;
+            for (const inst of waveInstances) {
+                if (!inst.host.getClientRects().length) continue; // hidden (e.g. modal closed)
+                const { W, H } = inst;
+                for (const L of inst.layers) {
+                    const amp = L.amp * H * (1 + waveBoost * 0.9);
+                    const amp2 = L.amp2 * H;
+                    const speed = 1 + waveBoost * 0.6;
+                    let d = `M0,0 L${W},0`;
+                    for (let i = N; i >= 0; i--) {
+                        const u = (i / N) * Math.PI * 2;
+                        const y = L.base * H
+                            + amp * Math.sin(u * L.k + t * L.s * speed + L.ph)
+                            + amp2 * Math.sin(u * L.k2 + t * L.s2 + L.ph * 2);
+                        d += ` L${(W * i / N).toFixed(1)},${y.toFixed(1)}`;
+                    }
+                    L.el.setAttribute('d', d + ' Z');
+                }
+            }
+        }
+
+        initWaves(document.getElementById('trim-wave'), 64);
+
+        window.addEventListener('pointermove', (e) => {
+            if (waveLastX !== null) waveBoost = Math.min(1.6, waveBoost + Math.abs(e.clientX - waveLastX) / 500);
+            waveLastX = e.clientX;
+        }, { passive: true });
+        window.addEventListener('scroll', () => { waveBoost = Math.min(1.6, waveBoost + 0.06); }, { passive: true });
+
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            drawWaves(0);
+        } else {
+            const waveT0 = performance.now();
+            const waveLoop = (now) => {
+                waveBoost *= 0.965;
+                drawWaves((now - waveT0) / 1000);
+                requestAnimationFrame(waveLoop);
+            };
+            requestAnimationFrame(waveLoop);
+        }
+
+        // ==========================================
+        // Silk lines hero: fine flowing lines that bend toward the cursor
+        // ==========================================
+        (function initSilk() {
+            const host = document.getElementById('wave-hero');
+            const cv = document.getElementById('aurora-canvas');
+            if (!host || !cv) return;
+            const ctx = cv.getContext('2d');
+            const LINES = 28, STEP = 8;
+            let W = 0, H = 0, dpr = 1;
+            const m = { x: -999, y: 0, tx: -999, ty: 0, amt: 0, press: 0, down: false, vx: 0, vy: 0 };
+            const pulses = [];
+            let energy = 0, lastX = null, lastY = null;
+            host.style.cursor = 'grab'; host.style.touchAction = 'pan-y'; host.style.userSelect = 'none';
+
+            function resize() {
+                const r = host.getBoundingClientRect();
+                dpr = Math.min(window.devicePixelRatio || 1, 2);
+                W = r.width; H = r.height;
+                cv.width = Math.floor(W * dpr); cv.height = Math.floor(H * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            host.addEventListener('pointermove', (e) => {
+                const r = host.getBoundingClientRect();
+                m.tx = e.clientX - r.left; m.ty = e.clientY - r.top;
+                if (m.amt < 0.05) { m.x = m.tx; m.y = m.ty; }
+                m.hover = true;
+                if (lastX !== null) energy = Math.min(1, energy + Math.hypot(e.clientX - lastX, e.clientY - lastY) / 700);
+                if (lastX !== null && m.down) {
+                    m.vx = Math.max(-40, Math.min(40, m.vx + (e.clientX - lastX) * 0.5));
+                    m.vy = Math.max(-40, Math.min(40, m.vy + (e.clientY - lastY) * 0.5));
+                    energy = Math.min(1.5, energy + 0.02);
+                }
+                lastX = e.clientX; lastY = e.clientY;
+            }, { passive: true });
+            host.addEventListener('pointerdown', (e) => {
+                const r = host.getBoundingClientRect();
+                m.tx = e.clientX - r.left; m.ty = e.clientY - r.top;
+                m.x = m.tx; m.y = m.ty; m.hover = true; m.down = true;
+                pulses.push({ x: m.tx, y: m.ty, age: 0 });
+                host.style.cursor = 'grabbing';
+                try { host.setPointerCapture(e.pointerId); } catch (_) {}
+            });
+            const release = () => { m.down = false; host.style.cursor = 'grab'; };
+            host.addEventListener('pointerup', release);
+            host.addEventListener('pointercancel', release);
+            host.addEventListener('pointerleave', () => { if (!m.down) { m.hover = false; lastX = lastY = null; } });
+
+            const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            let t = reduce ? 2 : 0, last = performance.now();
+
+            function frame(now) {
+                const dt = Math.min(0.05, (now - last) / 1000); last = now;
+                energy *= 0.97;
+                m.press += ((m.down ? 1 : 0) - m.press) * 0.08;
+                m.vx *= 0.92; m.vy *= 0.92;
+                for (let p = pulses.length - 1; p >= 0; p--) { pulses[p].age += dt; if (pulses[p].age > 2.2) pulses.splice(p, 1); }
+                m.amt += ((m.hover ? 1 : 0) - m.amt) * 0.06;
+                const follow = m.down ? 0.16 : 0.08;
+                m.x += (m.tx - m.x) * follow; m.y += (m.ty - m.y) * follow;
+                t += dt * (0.35 + 0.35 * m.amt + 0.4 * energy + 0.35 * m.press);
+
+                ctx.clearRect(0, 0, W, H);
+                const padY = H * 0.14, gap = (H - padY * 2) / (LINES - 1);
+                const grow = 1 + 0.5 * m.press;
+                const sx = Math.max(120, W * 0.12) * grow, sy = H * 0.45 * (1 + 0.35 * m.press);
+                const lines = [];
+
+                for (let i = 0; i < LINES; i++) {
+                    const y0 = padY + i * gap;
+                    const pts = [];
+                    for (let x = 0; x <= W + STEP; x += STEP) {
+                        const k = x / W;
+                        let y = y0
+                            + (H * 0.07) * Math.sin(k * 5.2 + t * 0.9 + i * 0.22)
+                            + (H * 0.04) * Math.sin(k * 11 - t * 1.2 + i * 0.4);
+                        const dx = x - m.x, dy = y0 - m.y;
+                        const f = Math.exp(-(dx * dx) / (2 * sx * sx) - (dy * dy) / (2 * sy * sy)) * m.amt;
+                        y += (m.y - y0) * (0.55 + 0.3 * m.press) * f;      // lines gather toward cursor
+                        y += Math.sin(x * 0.045 - t * 3 + i * 0.3) * (4 + 6 * m.press) * f * (0.5 + energy); // ripple
+                        y += m.vy * 0.5 * f + Math.sin(x * 0.02 + i * 0.5) * m.vx * 0.12 * f; // drag swirl
+                        for (const p of pulses) {                         // click shockwave
+                            const d = Math.hypot(x - p.x, y0 - p.y);
+                            const env = Math.exp(-p.age * 1.4) * Math.exp(-d / (W * 0.3));
+                            y += Math.sin(d * 0.06 - p.age * 7) * 14 * env;
+                        }
+                        pts.push(x, y);
+                    }
+                    lines.push(pts);
+                }
+
+                // base lines
+                const base = ctx.createLinearGradient(0, 0, W, 0);
+                base.addColorStop(0, 'rgba(196,170,140,0.0)');
+                base.addColorStop(0.2, 'rgba(196,170,140,0.75)');
+                base.addColorStop(0.55, 'rgba(140,122,107,0.7)');
+                base.addColorStop(0.85, 'rgba(120,112,104,0.6)');
+                base.addColorStop(1, 'rgba(120,112,104,0.0)');
+                ctx.strokeStyle = base; ctx.lineWidth = 1; ctx.lineJoin = 'round';
+                const draw = () => {
+                    for (const pts of lines) {
+                        ctx.beginPath(); ctx.moveTo(pts[0], pts[1]);
+                        for (let j = 2; j < pts.length; j += 2) ctx.lineTo(pts[j], pts[j + 1]);
+                        ctx.stroke();
+                    }
+                };
+                draw();
+
+                // highlight lens around the cursor
+                if (m.amt > 0.01) {
+                    const R = Math.max(110, W * 0.13) * (1 + 0.5 * m.press);
+                    const g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, R);
+                    g.addColorStop(0, `rgba(28,25,23,${0.9 * m.amt})`);
+                    g.addColorStop(0.5, `rgba(140,122,107,${0.6 * m.amt})`);
+                    g.addColorStop(1, 'rgba(140,122,107,0)');
+                    ctx.strokeStyle = g; ctx.lineWidth = 1.4 + 0.8 * m.press;
+                    draw();
+                }
+
+                if (!reduce) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        })();
 
         // Run Local storage checks on initial application load
         initHistory();
